@@ -1,0 +1,40 @@
+# .gitmessage
+# Commit type:
+#   feat     - 新功能    - 用户注册功能
+#   fix      - Bug修复   - 登录页面表单验证错误
+#   docs     - 文档变更  - 更新API接口文档
+#   style    - 代码格式  - 调整代码缩进
+#   refactor - 代码重构  - 提出公共函数
+#   test     - 测试相关  - 添加单元测试
+#   perf     - 性能优化  - 优化性能
+#   chore    - 构建/依赖 - 更新依赖
+#   revert   - 回滚      - 回滚到上一个提交
+#   build    - 构建      - 添加构建脚本
+#   ci       - CI/CD     - 更新CI配置
+#   release  - 发布      - 发布新版本
+# --------------------
+# Scope (可选):
+#   frontend, backend, infra, docs, config
+#   作用域层级不超过2级（如feat(backend/login)）
+#   新模块首次提交使用feat(module): initialize
+# --------------------
+# Subject (必填):
+#   不超过50个字符，首字母小写，结尾不加句号
+# --------------------
+# Body (可选):
+#   详细描述修改内容
+#   使用祈使句（如"Add"而非"Added"）
+#   说明变更动机（Why > What）
+#   技术方案摘要（如有必要）
+# --------------------
+# Footer (可选):
+#   BREAKING CHANGE: 重大变更说明
+# --------------------
+# Issues (可选):
+#   Close #123, Fix #456
+
+{type}({scope}): {subject}
+
+[body]
+
+[footer]

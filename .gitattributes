@@ -1,0 +1,11 @@
+# .gitattributes
+* text=auto eol=lf
+
+*.sh text eol=lf
+
+*.md linguist-language=Markdown
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TSX
+
+package-lock.json binary
+yarn.lock binary
