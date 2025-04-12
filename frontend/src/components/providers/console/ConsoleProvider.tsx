@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
 import { CommandManager } from '@/utils/command/manager';
+import { CommandAction, SpecialCommandResult } from '@/types/command';
 
 interface ConsoleContextType {
   input: string;
@@ -29,9 +30,23 @@ export const ConsoleProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [commandManager] = useState(() => new CommandManager());
 
+  // 处理特殊命令结果
+  const handleSpecialCommandResult = (result: SpecialCommandResult) => {
+    if (result.action === CommandAction.CLEAR_CONSOLE) {
+      setOutput([]);
+    }
+    // 未来可以添加更多特殊命令处理
+  };
+
   const handleSubmit = async () => {
     if (!input.trim()) return;
     const result = await commandManager.execute(input);
+
+    // 检查是否是特殊命令结果
+    if ('action' in result) {
+      handleSpecialCommandResult(result as SpecialCommandResult);
+    }
+
     setOutput(prev => [
       ...prev,
       `> ${input}`,

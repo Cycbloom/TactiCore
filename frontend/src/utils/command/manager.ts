@@ -1,7 +1,7 @@
 import { CommandParser } from './parser';
 import { registerCommands } from './commands';
 
-import { Command, CommandRegistry, CommandResult } from '@/types/command';
+import { Command, CommandRegistry, CommandResult, SpecialCommandResult } from '@/types/command';
 
 /**
  * 命令管理器类
@@ -26,7 +26,7 @@ export class CommandManager {
    * @param input 用户输入的命令字符串
    * @returns 命令执行结果
    */
-  async execute(input: string): Promise<CommandResult> {
+  async execute(input: string): Promise<CommandResult | SpecialCommandResult> {
     const { name, args } = CommandParser.parse(input);
     const command = this.registry[name];
 

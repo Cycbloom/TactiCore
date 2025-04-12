@@ -1,4 +1,5 @@
 import { helpCommand } from './help';
+import { clsCommand } from './cls';
 
 import { Command } from '@/types/command';
 
@@ -6,7 +7,8 @@ import { Command } from '@/types/command';
  * 所有可用命令的集合
  */
 export const commands: Command[] = [
-  helpCommand
+  helpCommand,
+  clsCommand
   // TODO: 添加更多命令
 ];
 
