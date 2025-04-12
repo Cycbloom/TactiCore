@@ -47,12 +47,9 @@ export default defineConfig([
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
 
-      '@typescript-eslint/explicit-function-return-type': [
-        'warn',
-        {
-          allowExpressions: true
-        }
-      ],
+      'react/react-in-jsx-scope': 'off',
+
+      '@typescript-eslint/explicit-function-return-type': 'off',
 
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
@@ -63,7 +60,9 @@ export default defineConfig([
           groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
           'newlines-between': 'always'
         }
-      ]
+      ],
+
+      'react/prop-types': 'off'
     }
   }
 ]);
