@@ -1,51 +1,14 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { Paper } from '@mui/material';
 
 import { ConsoleOutput } from './ConsoleOutput';
 import { ConsoleInput } from './ConsoleInput';
 
-import { CommandManager } from '@/utils/command/manager';
+import { ConsoleProvider, useConsole } from '@/components/providers/console/ConsoleProvider';
 
-export const Console: React.FC = () => {
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState<string[]>([]);
-  const [commandHistory, setCommandHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [commandManager] = useState(() => new CommandManager());
-
-  const handleSubmit = async () => {
-    if (!input.trim()) return;
-    const result = await commandManager.execute(input);
-    setOutput(prev => [
-      ...prev,
-      `> ${input}`,
-      `${result.success ? 'success:' : 'error:'}${result.message} ${result.data ? `(${JSON.stringify(result.data)})` : ''}`
-    ]);
-    setCommandHistory(prev => [...prev, input]);
-    setHistoryIndex(-1);
-    setInput('');
-  };
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        if (historyIndex < commandHistory.length - 1) {
-          const newIndex = historyIndex + 1;
-          setHistoryIndex(newIndex);
-          setInput(commandHistory[commandHistory.length - 1 - newIndex]);
-        }
-      } else if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        if (historyIndex > -1) {
-          const newIndex = historyIndex - 1;
-          setHistoryIndex(newIndex);
-          setInput(newIndex === -1 ? '' : commandHistory[commandHistory.length - 1 - newIndex]);
-        }
-      }
-    },
-    [commandHistory, historyIndex]
-  );
+// 内部组件，使用 useConsole
+const ConsoleContent: React.FC = () => {
+  const { input, output, setInput, handleSubmit, handleKeyDown } = useConsole();
 
   return (
     <Paper
@@ -69,5 +32,14 @@ export const Console: React.FC = () => {
         onKeyDown={handleKeyDown}
       />
     </Paper>
+  );
+};
+
+// 外部组件，提供 Context
+export const Console: React.FC = () => {
+  return (
+    <ConsoleProvider>
+      <ConsoleContent />
+    </ConsoleProvider>
   );
 };
