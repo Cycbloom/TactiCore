@@ -1,5 +1,6 @@
 import { helpCommand } from './help';
 import { clsCommand } from './cls';
+import { echoCommand } from './echo';
 
 import { Command } from '@/types/command';
 
@@ -8,7 +9,8 @@ import { Command } from '@/types/command';
  */
 export const commands: Command[] = [
   helpCommand,
-  clsCommand
+  clsCommand,
+  echoCommand
   // TODO: 添加更多命令
 ];
 
