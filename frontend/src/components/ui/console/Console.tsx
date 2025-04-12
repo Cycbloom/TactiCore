@@ -4,13 +4,21 @@ import { Paper } from '@mui/material';
 import { ConsoleOutput } from './ConsoleOutput';
 import { ConsoleInput } from './ConsoleInput';
 
+import { CommandManager } from '@/utils/command/manager';
+
 export const Console: React.FC = () => {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState<string[]>([]);
+  const [commandManager] = useState(() => new CommandManager());
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!input.trim()) return;
-    setOutput(prev => [...prev, `> ${input}`]);
+    const result = await commandManager.execute(input);
+    setOutput(prev => [
+      ...prev,
+      `> ${input}`,
+      `${result.success ? 'success:' : 'error:'}${result.message} ${result.data ? `(${JSON.stringify(result.data)})` : ''}`
+    ]);
     setInput('');
   };
 

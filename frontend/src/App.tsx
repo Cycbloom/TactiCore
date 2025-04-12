@@ -5,7 +5,7 @@ import { Console, ThemeToggle } from '@/components/ui';
 import { darkTheme, lightTheme } from '@/theme';
 
 const App = () => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const theme = useMemo(() => (isDarkMode ? darkTheme : lightTheme), [isDarkMode]);
 
