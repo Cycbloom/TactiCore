@@ -1,74 +1,57 @@
-import { TextField, Typography } from '@mui/material';
-import { Send as SendIcon } from '@mui/icons-material';
+import React from 'react';
+import { TextField, InputAdornment, IconButton } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 
 interface ConsoleInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onKeyDown?: (event: React.KeyboardEvent) => void;
 }
 
-export const ConsoleInput: React.FC<ConsoleInputProps> = ({ value, onChange, onSubmit }) => {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!value.trim()) return;
-    onSubmit();
+export const ConsoleInput: React.FC<ConsoleInputProps> = ({
+  value,
+  onChange,
+  onSubmit,
+  onKeyDown
+}) => {
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      onSubmit();
+    }
+    onKeyDown?.(event);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <TextField
-        fullWidth
-        variant="outlined"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder="输入命令..."
-        slotProps={{
-          input: {
-            startAdornment: (
-              <Typography
-                component="span"
-                sx={{
-                  color: 'primary.main',
-                  mr: 1,
-                  fontWeight: 'bold'
-                }}
-              >
-                {'>'}
-              </Typography>
-            ),
-            endAdornment: (
-              <SendIcon
-                sx={{
-                  color: 'primary.main',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    color: 'primary.dark'
-                  }
-                }}
-                onClick={() => {
-                  if (value.trim()) {
-                    onSubmit();
-                  }
-                }}
-              />
-            )
-          }
-        }}
-        sx={{
-          '& .MuiInputBase-root': {
-            backgroundColor: theme => (theme.palette.mode === 'dark' ? '#2d2d2d' : '#f5f5f5'),
-            borderRadius: 1,
-            '&:hover': {
-              backgroundColor: theme => (theme.palette.mode === 'dark' ? '#333333' : '#eeeeee')
-            }
-          },
-          '& .MuiInputBase-input': {
-            fontFamily: 'Consolas, Monaco, monospace',
-            color: theme => (theme.palette.mode === 'dark' ? '#d4d4d4' : '#000000')
-          }
-        }}
-        autoFocus
-      />
-    </form>
+    <TextField
+      fullWidth
+      variant="outlined"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      onKeyDown={handleKeyDown}
+      placeholder="输入命令..."
+      slotProps={{
+        input: {
+          startAdornment: (
+            <InputAdornment position="start">
+              <span style={{ color: 'inherit' }}>{'>'}</span>
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={onSubmit} edge="end" disabled={!value.trim()}>
+                <SendIcon />
+              </IconButton>
+            </InputAdornment>
+          )
+        }
+      }}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          fontFamily: 'Consolas, Monaco, monospace'
+        }
+      }}
+    />
   );
 };

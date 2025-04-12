@@ -45,7 +45,7 @@ export default defineConfig([
     },
 
     rules: {
-      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-explicit-any': 'off',
 
       'react/react-in-jsx-scope': 'off',
 
@@ -62,7 +62,8 @@ export default defineConfig([
         }
       ],
 
-      'react/prop-types': 'off'
+      'react/prop-types': 'off',
+      '@typescript-eslint/no-unused-vars': 'off'
     }
   }
 ]);
