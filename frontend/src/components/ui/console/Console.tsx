@@ -1,14 +1,13 @@
 import React from 'react';
-import { Paper } from '@mui/material';
+import { Box, Paper, Typography } from '@mui/material';
 
 import { ConsoleOutput } from './ConsoleOutput';
 import { ConsoleInput } from './ConsoleInput';
 
-import { ConsoleProvider, useConsole } from '@/components/providers/console/ConsoleProvider';
+import { ConsoleProvider, useConsole } from '@/components/providers';
 
-// 内部组件，使用 useConsole
 const ConsoleContent: React.FC = () => {
-  const { input, output, setInput, handleSubmit, handleKeyDown } = useConsole();
+  const { output, input, setInput, handleSubmit, handleKeyDown } = useConsole();
 
   return (
     <Paper
@@ -16,21 +15,27 @@ const ConsoleContent: React.FC = () => {
       sx={{
         width: '100%',
         height: '100vh',
-        backgroundColor: theme => (theme.palette.mode === 'dark' ? '#1e1e1e' : '#ffffff'),
-        color: theme => (theme.palette.mode === 'dark' ? '#d4d4d4' : '#000000'),
-        padding: 2,
         display: 'flex',
         flexDirection: 'column',
-        fontFamily: 'Consolas, Monaco, monospace'
+        overflow: 'hidden',
+        bgcolor: 'background.paper',
+        borderRadius: 2
       }}
     >
-      <ConsoleOutput output={output} />
-      <ConsoleInput
-        value={input}
-        onChange={setInput}
-        onSubmit={handleSubmit}
-        onKeyDown={handleKeyDown}
-      />
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Typography variant="h6" component="div">
+          控制台
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <ConsoleOutput output={output} />
+        <ConsoleInput
+          value={input}
+          onChange={setInput}
+          onSubmit={handleSubmit}
+          onKeyDown={handleKeyDown}
+        />
+      </Box>
     </Paper>
   );
 };

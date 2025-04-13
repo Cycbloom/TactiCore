@@ -1,31 +1,64 @@
 import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 
+import { CommandResult } from '@/types/command';
+import { LogLevel } from '@/utils/logger';
+
 interface ConsoleOutputProps {
-  output: string[];
+  output: CommandResult[];
 }
 
 export const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ output }) => {
   const theme = useTheme();
 
-  const getLineColor = (line: string) => {
-    if (line.startsWith('>')) {
-      return theme.palette.primary.main;
-    }
-    if (line.startsWith('success:')) {
-      return theme.palette.success.main;
-    }
-    if (line.startsWith('error:')) {
-      return theme.palette.error.main;
-    }
-    return theme.palette.text.primary;
-  };
+  const renderOutput = (result: CommandResult) => {
+    if (result.isLog) {
+      const [level, message] = result.message.split(':');
+      let color = theme.palette.text.primary;
 
-  const formatLine = (line: string) => {
-    if (line.startsWith('success:') || line.startsWith('error:')) {
-      return line.split(':').slice(1).join(':');
+      // 根据日志级别设置颜色
+      switch (level) {
+        case LogLevel.DEBUG:
+          color = theme.palette.info.main;
+          break;
+        case LogLevel.INFO:
+          color = theme.palette.success.main;
+          break;
+        case LogLevel.WARN:
+          color = theme.palette.warning.main;
+          break;
+        case LogLevel.ERROR:
+          color = theme.palette.error.main;
+          break;
+      }
+
+      return (
+        <Typography
+          component="div"
+          sx={{
+            color,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          }}
+        >
+          {`[${level}] ${message}`}
+        </Typography>
+      );
     }
-    return line;
+
+    // 非日志消息使用默认颜色
+    return (
+      <Typography
+        component="div"
+        sx={{
+          color: result.success ? theme.palette.text.primary : theme.palette.error.main,
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word'
+        }}
+      >
+        {result.message}
+      </Typography>
+    );
   };
 
   return (
@@ -34,24 +67,16 @@ export const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ output }) => {
         flex: 1,
         overflow: 'auto',
         p: 2,
-        backgroundColor: theme => theme.palette.background.default,
-        borderRadius: 1
+        bgcolor: 'theme.palette.background.paper',
+        fontFamily: 'monospace',
+        fontSize: '0.875rem',
+        lineHeight: 1.5
       }}
     >
-      {output.map((line, index) => (
-        <Typography
-          key={index}
-          variant="body2"
-          sx={{
-            margin: '4px 0',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-all',
-            fontFamily: 'Consolas, Monaco, monospace',
-            color: getLineColor(line)
-          }}
-        >
-          {formatLine(line)}
-        </Typography>
+      {output.map((result, index) => (
+        <Box key={index} sx={{ mb: 1 }}>
+          {renderOutput(result)}
+        </Box>
       ))}
     </Box>
   );
