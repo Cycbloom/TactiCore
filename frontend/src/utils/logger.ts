@@ -14,8 +14,6 @@ export enum LogLevel {
 export interface LoggerConfig {
   level: LogLevel;
   enableConsole: boolean;
-  enableTimestamp: boolean;
-  enableColor: boolean;
 }
 
 /**
@@ -24,7 +22,6 @@ export interface LoggerConfig {
 export interface LogEntry {
   level: LogLevel;
   message: string;
-  timestamp: string;
   data?: any[];
 }
 
@@ -38,9 +35,7 @@ export type LogListener = (entry: LogEntry) => void;
  */
 const DEFAULT_CONFIG: LoggerConfig = {
   level: LogLevel.INFO,
-  enableConsole: true,
-  enableTimestamp: true,
-  enableColor: true
+  enableConsole: false
 };
 
 /**
@@ -151,48 +146,14 @@ export class Logger {
       return;
     }
 
-    // 获取时间戳
-    const timestamp = new Date().toISOString();
-
-    // 构建日志前缀
-    let prefix = `[${level}]`;
-
-    // 添加时间戳
-    if (this.config.enableTimestamp) {
-      prefix = `${prefix} [${timestamp}]`;
-    }
-
-    // 添加颜色
-    if (this.config.enableColor) {
-      prefix = this.colorize(prefix, level);
-    }
-
-    // 输出日志
-    if (this.config.enableConsole) {
-      switch (level) {
-        case LogLevel.DEBUG:
-          console.debug(prefix, message, ...data);
-          break;
-        case LogLevel.INFO:
-          console.info(prefix, message, ...data);
-          break;
-        case LogLevel.WARN:
-          console.warn(prefix, message, ...data);
-          break;
-        case LogLevel.ERROR:
-          console.error(prefix, message, ...data);
-          break;
-      }
-    }
-
-    // 通知所有监听器
+    // 构建日志条目
     const logEntry: LogEntry = {
       level,
       message,
-      timestamp,
       data: data.length > 0 ? data : undefined
     };
 
+    // 通知所有监听器
     this.notifyListeners(logEntry);
   }
 
@@ -228,24 +189,6 @@ export class Logger {
       default:
         return 1;
     }
-  }
-
-  /**
-   * 为日志添加颜色
-   * @param text 要着色的文本
-   * @param level 日志级别
-   * @returns 着色后的文本
-   */
-  private colorize(text: string, level: LogLevel): string {
-    const colors = {
-      [LogLevel.DEBUG]: '\x1b[36m', // 青色
-      [LogLevel.INFO]: '\x1b[32m', // 绿色
-      [LogLevel.WARN]: '\x1b[33m', // 黄色
-      [LogLevel.ERROR]: '\x1b[31m' // 红色
-    };
-
-    const resetColor = '\x1b[0m';
-    return `${colors[level]}${text}${resetColor}`;
   }
 }
 

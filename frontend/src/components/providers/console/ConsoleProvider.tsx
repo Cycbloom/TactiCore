@@ -8,7 +8,8 @@ import {
   executeCommandAndUpdateConsole,
   updateConsoleInput,
   updateHistoryIndex,
-  updateConsoleShowLogs
+  updateConsoleShowLogs,
+  addCommandResultToOutput
 } from './consoleUtils';
 
 import { CommandAction, SpecialCommandResult, CommandResult } from '@/types/command';
@@ -89,9 +90,23 @@ export const ConsoleProvider: React.FC<ConsoleProviderProps> = ({ children }) =>
     (consoleId: string, result: SpecialCommandResult) => {
       if (result.action === CommandAction.CLEAR_CONSOLE) {
         setConsoles(prev => clearConsoleOutput(prev, consoleId));
+      } else if (result.action === CommandAction.SET_DEBUG_STATE && result.actionData) {
+        // 更新控制台的showLogs状态
+        setConsoles(prev => updateConsoleShowLogs(prev, consoleId, result.actionData.showLogs));
+      } else if (result.action === CommandAction.SHOW_DEBUG_STATUS) {
+        // 显示当前控制台的showLogs状态
+        const console = consoles.find(c => c.id === consoleId);
+        if (console) {
+          setConsoles(prev =>
+            addCommandResultToOutput(prev, consoleId, {
+              success: true,
+              message: `当前日志显示状态: ${console.showLogs ? '开启' : '关闭'}`
+            })
+          );
+        }
       }
     },
-    []
+    [consoles]
   );
 
   // 处理命令提交

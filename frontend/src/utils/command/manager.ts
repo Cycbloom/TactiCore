@@ -27,7 +27,7 @@ export class CommandManager {
    * @returns 命令执行结果
    */
   async execute(input: string): Promise<CommandResult | SpecialCommandResult> {
-    const { name, args } = CommandParser.parse(input);
+    const { name, args } = CommandParser.parse(input, this.registry);
     const command = this.registry[name];
 
     if (!command) {

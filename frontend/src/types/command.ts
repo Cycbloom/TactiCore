@@ -80,7 +80,9 @@ export interface CommandResult {
  * 定义命令可以执行的特殊操作
  */
 export enum CommandAction {
-  CLEAR_CONSOLE = 'CLEAR_CONSOLE'
+  CLEAR_CONSOLE = 'CLEAR_CONSOLE',
+  SET_DEBUG_STATE = 'SET_DEBUG_STATE',
+  SHOW_DEBUG_STATUS = 'SHOW_DEBUG_STATUS'
   // 未来可以添加更多操作类型
 }
 

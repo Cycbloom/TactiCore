@@ -13,7 +13,10 @@ export const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ output }) => {
 
   const renderOutput = (result: CommandResult) => {
     if (result.isLog) {
-      const [level, message] = result.message.split(':');
+      const colonIndex = result.message.indexOf(':');
+      const level = colonIndex !== -1 ? result.message.substring(0, colonIndex) : result.message;
+      const message = colonIndex !== -1 ? result.message.substring(colonIndex + 1) : '';
+
       let color = theme.palette.text.primary;
 
       // 根据日志级别设置颜色
