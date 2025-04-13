@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { TextField, Box, InputAdornment, IconButton } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 interface ConsoleInputProps {

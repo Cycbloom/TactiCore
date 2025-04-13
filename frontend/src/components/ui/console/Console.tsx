@@ -3,11 +3,15 @@ import { Box, Paper, Typography } from '@mui/material';
 
 import { ConsoleOutput } from './ConsoleOutput';
 import { ConsoleInput } from './ConsoleInput';
+import { ConsoleTabs } from './ConsoleTabs';
 
 import { ConsoleProvider, useConsole } from '@/components/providers';
 
 const ConsoleContent: React.FC = () => {
-  const { output, input, setInput, handleSubmit, handleKeyDown } = useConsole();
+  const { consoles, activeConsoleId, setInput, handleSubmit, handleKeyDown } = useConsole();
+  const activeConsole = consoles.find(c => c.id === activeConsoleId);
+
+  if (!activeConsole) return null;
 
   return (
     <Paper
@@ -27,13 +31,14 @@ const ConsoleContent: React.FC = () => {
           控制台
         </Typography>
       </Box>
+      <ConsoleTabs />
       <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <ConsoleOutput output={output} />
+        <ConsoleOutput output={activeConsole.output} />
         <ConsoleInput
-          value={input}
-          onChange={setInput}
-          onSubmit={handleSubmit}
-          onKeyDown={handleKeyDown}
+          value={activeConsole.input}
+          onChange={value => setInput(activeConsoleId, value)}
+          onSubmit={() => handleSubmit(activeConsoleId)}
+          onKeyDown={e => handleKeyDown(activeConsoleId, e)}
         />
       </Box>
     </Paper>

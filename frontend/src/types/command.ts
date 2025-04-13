@@ -71,6 +71,7 @@ export interface ParsedCommand {
 export interface CommandResult {
   success: boolean;
   message: string;
+  isLog?: boolean;
   data?: any;
 }
 

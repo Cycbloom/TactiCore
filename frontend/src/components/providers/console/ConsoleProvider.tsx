@@ -1,20 +1,21 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 
-import { CommandManager } from '@/utils/command/manager';
+import {
+  createInitialConsole,
+  updateConsole,
+  addLogToOutput,
+  clearConsoleOutput,
+  executeCommandAndUpdateConsole,
+  updateConsoleInput,
+  updateHistoryIndex,
+  updateConsoleShowLogs
+} from './consoleUtils';
+
 import { CommandAction, SpecialCommandResult, CommandResult } from '@/types/command';
 import { logger, LogEntry } from '@/utils/logger';
+import { ConsoleContextType, ConsoleState } from '@/types/console';
 
-interface ConsoleContextType {
-  input: string;
-  output: CommandResult[];
-  commandHistory: string[];
-  historyIndex: number;
-  setInput: (value: string) => void;
-  handleSubmit: (input: string) => Promise<void>;
-  handleKeyDown: (event: React.KeyboardEvent) => void;
-  showLogs: boolean;
-  setShowLogs: (show: boolean) => void;
-}
+// ===== 上下文定义 =====
 
 const ConsoleContext = createContext<ConsoleContextType | undefined>(undefined);
 
@@ -31,177 +32,183 @@ interface ConsoleProviderProps {
 }
 
 export const ConsoleProvider: React.FC<ConsoleProviderProps> = ({ children }) => {
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState<CommandResult[]>([]);
-  const [commandManager, setCommandManager] = useState<CommandManager | null>(null);
-  const [commandHistory, setCommandHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [showLogs, setShowLogs] = useState(false);
+  // ===== 状态定义 =====
+  const [consoles, setConsoles] = useState<ConsoleState[]>([]);
+  const [activeConsoleId, setActiveConsoleId] = useState<string>('');
   const outputRef = useRef<CommandResult[]>([]);
 
-  // 初始化命令管理器
+  // ===== 初始化 =====
+  // 初始化第一个控制台
   useEffect(() => {
-    const manager = new CommandManager();
-    setCommandManager(manager);
-  }, []);
+    if (consoles.length === 0) {
+      const initialConsole = createInitialConsole();
+      setConsoles([initialConsole]);
+      setActiveConsoleId(initialConsole.id);
+    }
+  }, [consoles.length]);
 
   // 设置输出引用
   useEffect(() => {
-    outputRef.current = output;
-  }, [output]);
+    const activeConsole = consoles.find(c => c.id === activeConsoleId);
+    if (activeConsole) {
+      outputRef.current = activeConsole.output;
+    }
+  }, [consoles, activeConsoleId]);
 
+  // ===== 日志处理 =====
   // 添加日志监听器
   useEffect(() => {
     const handleLog = (entry: LogEntry) => {
-      if (!showLogs) return;
+      // 检查所有控制台的 showLogs 状态
+      const consolesWithLogs = consoles.filter(c => c.showLogs);
+      if (consolesWithLogs.length === 0) return;
 
-      // 格式化日志消息
-      const formattedMessage = formatLogEntry(entry);
-
-      // 添加到输出
-      setOutput(prev => [
-        ...prev,
-        {
-          success: true,
-          message: formattedMessage,
-          isLog: true
-        }
-      ]);
+      // 为每个启用了日志的控制台添加日志
+      setConsoles(prev => {
+        let newConsoles = [...prev];
+        consolesWithLogs.forEach(console => {
+          newConsoles = addLogToOutput(
+            newConsoles,
+            console.id,
+            entry.level,
+            entry.message,
+            entry.data
+          );
+        });
+        return newConsoles;
+      });
     };
 
-    // 添加监听器
     const removeListener = logger.addListener(handleLog);
+    return () => removeListener();
+  }, [consoles]);
 
-    // 清理函数
-    return () => {
-      removeListener();
-    };
-  }, [showLogs]);
-
-  // 格式化日志条目
-  const formatLogEntry = (entry: LogEntry): string => {
-    let message = `${entry.level}:${entry.message}`;
-
-    if (entry.data && entry.data.length > 0) {
-      message += ` ${JSON.stringify(entry.data)}`;
-    }
-
-    return message;
-  };
-
-  // 添加输出到控制台
-  const addOutput = useCallback(
-    (text: string, type: 'command' | 'success' | 'error' = 'command') => {
-      setOutput(prev => [
-        ...prev,
-        {
-          success: type !== 'error',
-          message: text,
-          isLog: false
-        }
-      ]);
+  // ===== 命令处理 =====
+  // 处理特殊命令结果
+  const handleSpecialCommandResult = useCallback(
+    (consoleId: string, result: SpecialCommandResult) => {
+      if (result.action === CommandAction.CLEAR_CONSOLE) {
+        setConsoles(prev => clearConsoleOutput(prev, consoleId));
+      }
     },
     []
   );
 
-  // 检查是否是特殊命令结果
-  const isSpecialCommandResult = (result: CommandResult): result is SpecialCommandResult => {
-    return 'action' in result;
-  };
+  // 处理命令提交
+  const handleSubmit = useCallback(
+    async (consoleId: string) => {
+      const console = consoles.find(c => c.id === consoleId);
+      if (!console || !console.input.trim()) return;
+
+      const result = await console.commandManager.execute(console.input);
+
+      // 使用简化后的函数一次性更新所有状态
+      setConsoles(prev => executeCommandAndUpdateConsole(prev, consoleId, console.input, result));
+
+      if ('action' in result) {
+        handleSpecialCommandResult(consoleId, result);
+      }
+    },
+    [consoles, handleSpecialCommandResult]
+  );
+
+  // ===== 输入处理 =====
+  // 设置输入值
+  const setInput = useCallback((consoleId: string, value: string) => {
+    setConsoles(prev => updateConsoleInput(prev, consoleId, value));
+  }, []);
 
   // 导航命令历史
   const navigateHistory = useCallback(
-    (direction: 'up' | 'down') => {
+    (consoleId: string, direction: 'up' | 'down') => {
+      const console = consoles.find(c => c.id === consoleId);
+      if (!console) return;
+
       if (direction === 'up') {
-        if (historyIndex < commandHistory.length - 1) {
-          const newIndex = historyIndex + 1;
-          setHistoryIndex(newIndex);
-          setInput(commandHistory[commandHistory.length - 1 - newIndex]);
+        if (console.historyIndex < console.commandHistory.length - 1) {
+          const newIndex = console.historyIndex + 1;
+          setConsoles(prev => updateHistoryIndex(prev, consoleId, newIndex));
         }
       } else {
-        if (historyIndex > -1) {
-          const newIndex = historyIndex - 1;
-          setHistoryIndex(newIndex);
-          setInput(newIndex === -1 ? '' : commandHistory[commandHistory.length - 1 - newIndex]);
+        if (console.historyIndex > -1) {
+          const newIndex = console.historyIndex - 1;
+          setConsoles(prev => updateHistoryIndex(prev, consoleId, newIndex));
         }
       }
     },
-    [commandHistory, historyIndex]
-  );
-
-  // 处理特殊命令结果
-  const handleSpecialCommandResult = useCallback((result: SpecialCommandResult) => {
-    if (result.action === CommandAction.CLEAR_CONSOLE) {
-      setOutput([]);
-    }
-  }, []);
-
-  // 处理命令提交
-  const handleSubmit = useCallback(
-    async (input: string) => {
-      if (!input.trim() || !commandManager) return;
-
-      // 添加命令到历史记录
-      setCommandHistory(prev => [...prev, input]);
-      setHistoryIndex(-1);
-
-      // 清空输入
-      setInput('');
-
-      // 添加命令到输出
-      addOutput(`> ${input}`, 'command');
-
-      try {
-        // 执行命令
-        const result = await commandManager.execute(input);
-
-        // 处理特殊命令结果
-        if (isSpecialCommandResult(result)) {
-          handleSpecialCommandResult(result);
-        }
-
-        // 添加结果到输出
-        setOutput(prev => [...prev, result]);
-      } catch (error) {
-        setOutput(prev => [
-          ...prev,
-          {
-            success: false,
-            message: `错误: ${error instanceof Error ? error.message : String(error)}`,
-            isLog: false
-          }
-        ]);
-      }
-    },
-    [commandManager, addOutput, handleSpecialCommandResult]
+    [consoles]
   );
 
   // 处理键盘事件
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
+    (consoleId: string, e: React.KeyboardEvent) => {
+      const console = consoles.find(c => c.id === consoleId);
+      if (!console) return;
+
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        handleSubmit(input);
+        handleSubmit(consoleId);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        navigateHistory('up');
+        navigateHistory(consoleId, 'up');
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        navigateHistory('down');
+        navigateHistory(consoleId, 'down');
       }
     },
-    [input, handleSubmit, navigateHistory]
+    [consoles, handleSubmit, navigateHistory]
   );
 
+  // ===== 控制台管理 =====
+  // 创建新控制台
+  const createConsole = useCallback(() => {
+    const newConsole = createInitialConsole(`控制台 ${consoles.length + 1}`);
+    setConsoles(prev => [...prev, newConsole]);
+    setActiveConsoleId(newConsole.id);
+  }, [consoles.length]);
+
+  // 删除控制台
+  const deleteConsole = useCallback(
+    (consoleId: string) => {
+      setConsoles(prev => {
+        const newConsoles = prev.filter(c => c.id !== consoleId);
+        if (newConsoles.length === 0) {
+          // 如果删除后没有控制台了，创建一个新的
+          const initialConsole = createInitialConsole();
+          setActiveConsoleId(initialConsole.id);
+          return [initialConsole];
+        }
+        // 如果删除的是当前活动控制台，切换到最后一个控制台
+        if (consoleId === activeConsoleId) {
+          setActiveConsoleId(newConsoles[newConsoles.length - 1].id);
+        }
+        return newConsoles;
+      });
+    },
+    [activeConsoleId]
+  );
+
+  // 重命名控制台
+  const renameConsole = useCallback((consoleId: string, newName: string) => {
+    setConsoles(prev => updateConsole(prev, consoleId, { name: newName }));
+  }, []);
+
+  // 设置日志显示状态
+  const setShowLogs = useCallback((consoleId: string, show: boolean) => {
+    setConsoles(prev => updateConsoleShowLogs(prev, consoleId, show));
+  }, []);
+
+  // ===== 上下文值 =====
   const value = {
-    input,
-    output,
-    commandHistory,
-    historyIndex,
+    consoles,
+    activeConsoleId,
     setInput,
     handleSubmit,
     handleKeyDown,
-    showLogs,
+    createConsole,
+    deleteConsole,
+    renameConsole,
+    setActiveConsole: setActiveConsoleId,
     setShowLogs
   };
 
