@@ -82,7 +82,8 @@ export interface CommandResult {
 export enum CommandAction {
   CLEAR_CONSOLE = 'CLEAR_CONSOLE',
   SET_DEBUG_STATE = 'SET_DEBUG_STATE',
-  SHOW_DEBUG_STATUS = 'SHOW_DEBUG_STATUS'
+  SHOW_DEBUG_STATUS = 'SHOW_DEBUG_STATUS',
+  TOGGLE_DEBUG_STATE = 'TOGGLE_DEBUG_STATE'
   // 未来可以添加更多操作类型
 }
 

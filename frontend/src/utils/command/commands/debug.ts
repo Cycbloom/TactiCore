@@ -60,10 +60,11 @@ export const debugCommand: Command = {
       } as SpecialCommandResult;
     }
 
-    // 如果没有参数，显示帮助信息
+    // 如果没有参数，切换日志显示状态
     return {
       success: true,
-      message: `用法: debug [on|off] [--show]\n\non/off: 设置日志显示状态\n--show: 显示当前日志显示状态`
-    };
+      message: '切换日志显示状态',
+      action: CommandAction.TOGGLE_DEBUG_STATE
+    } as SpecialCommandResult;
   }
 };

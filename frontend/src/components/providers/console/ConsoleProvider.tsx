@@ -104,6 +104,19 @@ export const ConsoleProvider: React.FC<ConsoleProviderProps> = ({ children }) =>
             })
           );
         }
+      } else if (result.action === CommandAction.TOGGLE_DEBUG_STATE) {
+        // 切换控制台的showLogs状态
+        const console = consoles.find(c => c.id === consoleId);
+        if (console) {
+          const newShowLogs = !console.showLogs;
+          setConsoles(prev => updateConsoleShowLogs(prev, consoleId, newShowLogs));
+          setConsoles(prev =>
+            addCommandResultToOutput(prev, consoleId, {
+              success: true,
+              message: `日志显示已${newShowLogs ? '开启' : '关闭'}`
+            })
+          );
+        }
       }
     },
     [consoles]
