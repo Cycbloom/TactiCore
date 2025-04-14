@@ -217,10 +217,10 @@ export const ConsoleProvider: React.FC<ConsoleProviderProps> = ({ children }) =>
       setConsoles(prev => {
         const newConsoles = prev.filter(c => c.id !== consoleId);
         if (newConsoles.length === 0) {
-          // 如果删除后没有控制台了，创建一个新的
-          const initialConsole = createInitialConsole();
-          setActiveConsoleId(initialConsole.id);
-          return [initialConsole];
+          // 隐藏控制台
+          setShowConsole(false);
+          setActiveConsoleId('');
+          return [];
         }
         // 如果删除的是当前活动控制台，切换到最后一个控制台
         if (consoleId === activeConsoleId) {

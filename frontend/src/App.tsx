@@ -1,5 +1,5 @@
 import React from 'react';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ThemeProvider, CssBaseline, Box } from '@mui/material';
 import { useState, useMemo } from 'react';
 
 import { Console, ThemeToggle } from '@/components/ui';
