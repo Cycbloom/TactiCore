@@ -7,7 +7,6 @@ import { darkTheme, lightTheme } from '@/theme';
 
 const App: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-
   const theme = useMemo(() => (isDarkMode ? darkTheme : lightTheme), [isDarkMode]);
 
   return (

@@ -1,2 +1,2 @@
-export { Console } from './console/Console';
-export { ThemeToggle } from './theme/ThemeToggle';
+export * from './console';
+export * from './theme/ThemeToggle';

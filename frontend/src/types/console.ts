@@ -16,6 +16,7 @@ export interface ConsoleState {
 export interface ConsoleContextType {
   consoles: ConsoleState[];
   activeConsoleId: string;
+  showConsole: boolean;
   setInput: (consoleId: string, value: string) => void;
   handleSubmit: (consoleId: string) => Promise<void>;
   handleKeyDown: (consoleId: string, e: React.KeyboardEvent) => void;

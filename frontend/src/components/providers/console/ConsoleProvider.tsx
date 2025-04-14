@@ -36,6 +36,7 @@ export const ConsoleProvider: React.FC<ConsoleProviderProps> = ({ children }) =>
   // ===== 状态定义 =====
   const [consoles, setConsoles] = useState<ConsoleState[]>([]);
   const [activeConsoleId, setActiveConsoleId] = useState<string>('');
+  const [showConsole, setShowConsole] = useState(false);
   const outputRef = useRef<CommandResult[]>([]);
 
   // ===== 初始化 =====
@@ -55,6 +56,21 @@ export const ConsoleProvider: React.FC<ConsoleProviderProps> = ({ children }) =>
       outputRef.current = activeConsole.output;
     }
   }, [consoles, activeConsoleId]);
+
+  // 添加键盘事件监听
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === '`') {
+        e.preventDefault();
+        setShowConsole(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   // ===== 日志处理 =====
   // 添加日志监听器
@@ -230,6 +246,7 @@ export const ConsoleProvider: React.FC<ConsoleProviderProps> = ({ children }) =>
   const value = {
     consoles,
     activeConsoleId,
+    showConsole,
     setInput,
     handleSubmit,
     handleKeyDown,
