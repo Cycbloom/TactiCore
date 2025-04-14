@@ -5,7 +5,7 @@ interface ThemeToggleProps {
   onToggle: () => void;
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({ onToggle }) => {
+const ThemeToggle: React.FC<ThemeToggleProps> = ({ onToggle }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -35,3 +35,5 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ onToggle }) => {
     </Box>
   );
 };
+
+export default ThemeToggle;
