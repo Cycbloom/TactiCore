@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Container, Typography, Button, Dialog } from '@mui/material';
 
 import { TaskCard } from '@/components/ui';
-import { Task, TaskStatus } from '@/types/task';
+import { Task, TaskStatus, TaskFormData } from '@/types/task';
+import TaskForm from '@/components/ui/task/TaskForm';
 
 const TestTaskPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([
@@ -40,6 +41,19 @@ const TestTaskPage: React.FC = () => {
     }
   ]);
 
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const handleCreateTask = (data: TaskFormData) => {
+    const newTask: Task = {
+      ...data,
+      id: Date.now().toString(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    setTasks([...tasks, newTask]);
+    setIsCreateDialogOpen(false);
+  };
+
   const handleEdit = (id: string) => {
     console.log('编辑任务:', id);
     // TODO: 实现编辑逻辑
@@ -60,9 +74,15 @@ const TestTaskPage: React.FC = () => {
   return (
     <Container maxWidth="md">
       <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          任务管理测试页面
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography variant="h4" component="h1">
+            任务管理测试页面
+          </Typography>
+          <Button variant="contained" onClick={() => setIsCreateDialogOpen(true)}>
+            创建任务
+          </Button>
+        </Box>
+
         <Box sx={{ mt: 4 }}>
           {tasks.map(task => (
             <TaskCard
@@ -74,6 +94,17 @@ const TestTaskPage: React.FC = () => {
             />
           ))}
         </Box>
+
+        <Dialog
+          open={isCreateDialogOpen}
+          onClose={() => setIsCreateDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <Box sx={{ p: 3 }}>
+            <TaskForm onSubmit={handleCreateTask} onCancel={() => setIsCreateDialogOpen(false)} />
+          </Box>
+        </Dialog>
       </Box>
     </Container>
   );
