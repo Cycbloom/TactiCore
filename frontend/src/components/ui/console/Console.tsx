@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, Paper, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 
 import { ConsoleOutput } from './ConsoleOutput';
 import { ConsoleInput } from './ConsoleInput';
 import { ConsoleTabs } from './ConsoleTabs';
 
+import { ResizableContainer } from '@/components/ui/common/layout';
 import { ConsoleProvider, useConsole } from '@/components/providers';
 
 const ConsoleContent: React.FC = () => {
@@ -14,34 +15,24 @@ const ConsoleContent: React.FC = () => {
   if (!activeConsole) return null;
 
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        width: '100%',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        bgcolor: 'background.paper',
-        borderRadius: 2
-      }}
-    >
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6" component="div">
-          控制台
-        </Typography>
+    <ResizableContainer minHeight={200} maxHeight={600} initialHeight={300}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <ConsoleTabs />
+        </Box>
+        <Box sx={{ flex: 1, overflow: 'auto' }}>
+          <ConsoleOutput output={activeConsole.output} />
+        </Box>
+        <Box sx={{ borderTop: 1, borderColor: 'divider' }}>
+          <ConsoleInput
+            value={activeConsole.input}
+            onChange={value => setInput(activeConsoleId, value)}
+            onSubmit={() => handleSubmit(activeConsoleId)}
+            onKeyDown={e => handleKeyDown(activeConsoleId, e)}
+          />
+        </Box>
       </Box>
-      <ConsoleTabs />
-      <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <ConsoleOutput output={activeConsole.output} />
-        <ConsoleInput
-          value={activeConsole.input}
-          onChange={value => setInput(activeConsoleId, value)}
-          onSubmit={() => handleSubmit(activeConsoleId)}
-          onKeyDown={e => handleKeyDown(activeConsoleId, e)}
-        />
-      </Box>
-    </Paper>
+    </ResizableContainer>
   );
 };
 

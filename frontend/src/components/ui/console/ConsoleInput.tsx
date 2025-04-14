@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { TextField, Box, InputAdornment, IconButton } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+
 interface ConsoleInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -28,7 +29,7 @@ export const ConsoleInput: React.FC<ConsoleInputProps> = ({
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+    <Box component="form" onSubmit={handleSubmit}>
       <TextField
         inputRef={inputRef}
         fullWidth
@@ -38,6 +39,7 @@ export const ConsoleInput: React.FC<ConsoleInputProps> = ({
         onKeyDown={onKeyDown}
         placeholder="输入命令..."
         autoFocus
+        size="small"
         slotProps={{
           input: {
             startAdornment: (
@@ -47,8 +49,8 @@ export const ConsoleInput: React.FC<ConsoleInputProps> = ({
             ),
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={handleSubmit} edge="end" disabled={!value.trim()}>
-                  <SendIcon />
+                <IconButton onClick={handleSubmit} edge="end" disabled={!value.trim()} size="small">
+                  <SendIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
             )
@@ -59,7 +61,8 @@ export const ConsoleInput: React.FC<ConsoleInputProps> = ({
             fontFamily: 'Consolas, Monaco, monospace',
             backgroundColor: theme => (theme.palette.mode === 'dark' ? '#2d2d2d' : '#f5f5f5'),
             '& fieldset': {
-              borderColor: theme => (theme.palette.mode === 'dark' ? '#444' : '#ddd')
+              borderColor: 'transparent',
+              borderWidth: '1px 0 0 0'
             },
             '&:hover fieldset': {
               borderColor: theme => (theme.palette.mode === 'dark' ? '#666' : '#bbb')

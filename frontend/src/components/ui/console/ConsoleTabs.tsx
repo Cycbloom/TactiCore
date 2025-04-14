@@ -60,12 +60,14 @@ export const ConsoleTabs: React.FC = () => {
         variant="scrollable"
         scrollButtons="auto"
         sx={{
-          minHeight: 48,
+          minHeight: 36,
           '& .MuiTab-root': {
-            minHeight: 48,
+            minHeight: 36,
             textTransform: 'none',
-            minWidth: 120,
-            pr: 4
+            minWidth: 100,
+            pr: 3,
+            py: 0.5,
+            fontSize: '0.875rem'
           }
         }}
       >
@@ -87,7 +89,7 @@ export const ConsoleTabs: React.FC = () => {
                       flex: 1,
                       width: `${editingName.length + 8}ch`,
                       '& .MuiInputBase-root': {
-                        height: 28,
+                        height: 24,
                         fontSize: '0.875rem'
                       }
                     }}
@@ -103,17 +105,17 @@ export const ConsoleTabs: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: 20,
-                    height: 20,
+                    width: 16,
+                    height: 16,
                     borderRadius: '50%',
-                    ml: 1,
+                    ml: 0.5,
                     cursor: 'pointer',
                     '&:hover': {
                       backgroundColor: theme.palette.action.hover
                     }
                   }}
                 >
-                  <CloseIcon sx={{ fontSize: 16 }} />
+                  <CloseIcon sx={{ fontSize: 14 }} />
                 </Box>
               </Box>
             }
@@ -123,16 +125,17 @@ export const ConsoleTabs: React.FC = () => {
       </Tabs>
       <IconButton
         onClick={createConsole}
+        size="small"
         sx={{
           position: 'absolute',
-          right: 8,
-          top: 8,
+          right: 4,
+          top: 4,
           '&:hover': {
             backgroundColor: theme.palette.action.hover
           }
         }}
       >
-        <AddIcon />
+        <AddIcon fontSize="small" />
       </IconButton>
     </Box>
   );
