@@ -1,0 +1,189 @@
+{
+  "info": {
+    "_postman_id": "d579386b-b164-40fd-bbfc-6d485583dd08",
+    "name": "TactiCore Task API",
+    "description": "测试 TactiCore 任务管理 API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "35035175"
+  },
+  "item": [
+    {
+      "name": "创建任务",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"测试任务\",\n  \"description\": \"这是一个测试任务\",\n  \"status\": \"todo\",\n  \"priority\": \"medium\",\n  \"dueDate\": \"2024-12-31T23:59:59Z\",\n  \"tags\": [\"测试\", \"示例\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tasks",
+          "host": ["{{base_url}}"],
+          "path": ["tasks"]
+        },
+        "description": "创建一个新的任务"
+      },
+      "response": []
+    },
+    {
+      "name": "获取任务列表",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/tasks?status=todo&priority=medium",
+          "host": ["{{base_url}}"],
+          "path": ["tasks"],
+          "query": [
+            {
+              "key": "status",
+              "value": "todo"
+            },
+            {
+              "key": "priority",
+              "value": "medium"
+            }
+          ]
+        },
+        "description": "获取任务列表，支持过滤"
+      },
+      "response": []
+    },
+    {
+      "name": "获取单个任务",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/tasks/{{task_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["tasks", "{{task_id}}"]
+        },
+        "description": "获取单个任务的详细信息"
+      },
+      "response": []
+    },
+    {
+      "name": "更新任务",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"更新后的任务\",\n  \"description\": \"这是更新后的任务描述\",\n  \"status\": \"inProgress\",\n  \"priority\": \"high\",\n  \"dueDate\": \"2024-12-31T23:59:59Z\",\n  \"tags\": [\"测试\", \"示例\", \"已更新\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tasks/{{task_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["tasks", "{{task_id}}"]
+        },
+        "description": "更新现有任务"
+      },
+      "response": []
+    },
+    {
+      "name": "删除任务",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/tasks/{{task_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["tasks", "{{task_id}}"]
+        },
+        "description": "删除指定任务"
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "jwt",
+    "jwt": [
+      {
+        "key": "secret",
+        "value": "tacticore-jwt-secret",
+        "type": "string"
+      },
+      {
+        "key": "algorithm",
+        "value": "HS256",
+        "type": "string"
+      },
+      {
+        "key": "isSecretBase64Encoded",
+        "value": false,
+        "type": "boolean"
+      },
+      {
+        "key": "payload",
+        "value": "{}",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      },
+      {
+        "key": "headerPrefix",
+        "value": "Bearer",
+        "type": "string"
+      },
+      {
+        "key": "queryParamKey",
+        "value": "token",
+        "type": "string"
+      },
+      {
+        "key": "header",
+        "value": "{}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "tacticore-jwt-secret",
+      "type": "string"
+    },
+    {
+      "key": "task_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}
