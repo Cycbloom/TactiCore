@@ -9,4 +9,5 @@ RUN npm ci
 COPY . .
 
 # 启动开发服务器
+RUN npx prisma generate
 CMD ["npm", "run", "start:dev:docker"]

@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+
+import { PrismaModule } from './prisma.module';
+import { MongoDBService } from './mongodb.service';
 
 @Module({
-  imports: [
-    MongooseModule.forRootAsync({
-      useFactory: () => ({
-        uri: process.env.MONGO_URI,
-      }),
-    }),
-  ],
+  imports: [PrismaModule],
+  providers: [MongoDBService],
+  exports: [PrismaModule, MongoDBService],
 })
 export class DatabaseModule {}

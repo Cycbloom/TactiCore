@@ -1,6 +1,6 @@
 services:
   frontend:
-    build: 
+    build:
       context: .
       dockerfile: frontend/Dockerfile.prod
       target: prod  # 默认生产环境
@@ -10,7 +10,7 @@ services:
       - backend
 
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile.prod
     env_file:
@@ -21,6 +21,7 @@ services:
       - ./backend/.env:/app/.env
     depends_on:
       - mongo
+      - postgres
     ports:
       - "3000:3000"
 
@@ -35,5 +36,23 @@ services:
     ports:
       - "27017:27017"
 
+  postgres:
+    image: postgres:16.8-alpine3.20
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_DB=tacticore
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   mongo_data:
+  postgres_data:
