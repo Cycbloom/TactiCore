@@ -18,7 +18,7 @@ import {
   UpdateTaskDto,
   TaskResponseDto,
   TaskFilterDto,
-} from '@/database/schemas/task.schema';
+} from '@/task/task.schema';
 import { JwtAuthGuard } from '@/core/auth/guards/jwt-auth.guard';
 
 @ApiTags('tasks')

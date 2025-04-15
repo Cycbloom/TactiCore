@@ -7,7 +7,7 @@ import {
   TaskFilterDto,
   TaskStatus,
   TaskPriority,
-} from '@/database/schemas/task.schema';
+} from '@/task/task.schema';
 import { PrismaService } from '@/database/prisma.service';
 
 @Injectable()
