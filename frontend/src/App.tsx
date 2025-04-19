@@ -5,9 +5,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import TaskListPage from './pages/TaskListPage';
 
+import { AuthProvider, ProtectedRoute } from '@/components/providers';
+import { LoginForm, DashboardForm } from '@/components/ui';
 import { Console, ThemeToggle } from '@/components/ui';
 import { darkTheme, lightTheme } from '@/theme';
-import TestTaskPage from '@/pages/TestTaskPage';
 import { DataProvider } from '@/data/DataContext';
 
 const App: React.FC = () => {
@@ -17,17 +18,28 @@ const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <DataProvider>
-        <Router>
-          <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
-            <ThemeToggle onToggle={() => setIsDarkMode(!isDarkMode)} />
-          </Box>
-          <Routes>
-            <Route path="/" element={<Console />} />
-            <Route path="/task-list" element={<TaskListPage />} />
-          </Routes>
-        </Router>
-      </DataProvider>
+      <AuthProvider>
+        <DataProvider>
+          <Router>
+            <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
+              <ThemeToggle onToggle={() => setIsDarkMode(!isDarkMode)} />
+            </Box>
+            <Routes>
+              <Route path="/login" element={<LoginForm />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/" element={<LoginForm />} />
+              <Route path="/task-list" element={<TaskListPage />} />
+            </Routes>
+          </Router>
+        </DataProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 };
