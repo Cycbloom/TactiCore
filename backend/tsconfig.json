@@ -15,7 +15,7 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "types": ["joi", "jest", "mocha"],
+    "types": ["node", "joi", "jest", "mocha"],
     "noFallthroughCasesInSwitch": false,
 
     /* Paths */
