@@ -10,4 +10,8 @@ COPY . .
 
 # 启动开发服务器
 RUN npx prisma generate
-CMD ["npm", "run", "start:dev:docker"]
+
+# 设置脚本权限
+RUN chmod +x ./scripts/init-db.sh
+# 使用初始化脚本
+CMD ["sh", "-c", "./scripts/init-db.sh && npm run start:dev:docker"]
