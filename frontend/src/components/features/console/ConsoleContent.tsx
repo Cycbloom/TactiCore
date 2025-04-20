@@ -5,8 +5,8 @@ import { ConsoleTabs } from './ConsoleTabs';
 import { ConsoleOutput } from './ConsoleOutput';
 import { ConsoleInput } from './ConsoleInput';
 
-import { useConsole } from '@/components/providers';
-import { ResizableContainer } from '@/components/ui/common/layout';
+import { useConsole } from '@/contexts';
+import { ResizableContainer } from '@/components/layout';
 
 export const ConsoleContent: React.FC = () => {
   const { consoles, activeConsoleId, showConsole, setInput, handleSubmit, handleKeyDown } =

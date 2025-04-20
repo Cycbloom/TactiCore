@@ -1,7 +1,7 @@
 import React from 'react';
 import { Paper, Container, Box, Typography, Button } from '@mui/material';
 
-import { useAuth } from '@/components/providers';
+import { useAuth } from '@/contexts';
 
 const DashboardForm: React.FC = () => {
   const { user, logout } = useAuth();

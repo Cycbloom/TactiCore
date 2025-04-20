@@ -4,14 +4,14 @@ import { SubmitHandler } from 'react-hook-form';
 import * as z from 'zod';
 
 import { Task } from '@/types/task';
-import { BaseForm } from '@/components/ui/common/forms';
+import { BaseForm } from '@/components/common/forms';
 import {
   FormInput,
   PrioritySelect,
   StatusSelect,
   DatePickerField,
   TagAutocomplete
-} from '@/components/ui/common/form-controls';
+} from '@/components/common/form-controls';
 
 const taskSchema = z.object({
   title: z.string().min(1, '标题不能为空'),

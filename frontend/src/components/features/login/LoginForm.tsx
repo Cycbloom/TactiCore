@@ -3,9 +3,9 @@ import { Paper, Container, Alert, CircularProgress, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
-import { BaseForm } from '@/components/ui/common/forms';
-import { FormInput } from '@/components/ui/common/form-controls';
-import { useAuth } from '@/components/providers';
+import { BaseForm } from '@/components/common/forms';
+import { FormInput } from '@/components/common/form-controls';
+import { useAuth } from '@/contexts';
 
 // 定义登录表单的验证模式
 const loginSchema = z.object({

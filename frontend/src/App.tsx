@@ -5,9 +5,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import TaskListPage from './pages/TaskListPage';
 
-import { AuthProvider, ProtectedRoute } from '@/components/providers';
-import { LoginForm, DashboardForm } from '@/components/ui';
-import { Console, ThemeToggle } from '@/components/ui';
+import { AuthProvider, ProtectedRoute } from '@/contexts';
+import { LoginForm, DashboardForm } from '@/components/features';
+import { Console, ThemeToggle } from '@/components/features';
 import { darkTheme, lightTheme } from '@/theme';
 import { DataProvider } from '@/data/DataContext';
 

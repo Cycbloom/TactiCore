@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { SelectOption } from '@/components/ui/common/form-controls';
+import { SelectOption } from '@/components/common/form-controls';
 
 export type TaskStatus = 'todo' | 'inProgress' | 'completed';
 export type TaskPriority = 'low' | 'medium' | 'high';

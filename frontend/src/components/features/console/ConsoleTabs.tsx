@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Tabs, Tab, IconButton, Box, useTheme, TextField } from '@mui/material';
 import { Add as AddIcon, Close as CloseIcon } from '@mui/icons-material';
 
-import { useConsole } from '@/components/providers';
+import { useConsole } from '@/contexts';
 
 export const ConsoleTabs: React.FC = () => {
   const theme = useTheme();

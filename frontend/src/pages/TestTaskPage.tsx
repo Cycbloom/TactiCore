@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Container, Typography, Button, Dialog } from '@mui/material';
 
-import { TaskCard } from '@/components/ui';
+import { TaskCard } from '@/components/features';
 import { Task, TaskStatus, TaskFormData } from '@/types/task';
-import TaskForm from '@/components/ui/task/TaskForm';
+import TaskForm from '@/components/features/task/TaskForm';
 
 const TestTaskPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([

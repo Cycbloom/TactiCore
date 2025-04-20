@@ -2,9 +2,9 @@ import React from 'react';
 import { Box } from '@mui/material';
 import * as z from 'zod';
 
-import { BaseForm } from '@/components/ui/common/forms';
-import FormInput from '@/components/ui/common/form-controls/FormInput';
-import GenericSelect, { SelectOption } from '@/components/ui/common/form-controls/GenericSelect';
+import { BaseForm } from '@/components/common/forms';
+import FormInput from '@/components/common/form-controls/FormInput';
+import GenericSelect, { SelectOption } from '@/components/common/form-controls/GenericSelect';
 
 type FilterFormData = {
   searchTerm: string;

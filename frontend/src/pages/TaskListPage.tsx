@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import TaskList from '@/components/ui/task/TaskList';
+import TaskList from '@/components/features/task/TaskList';
 import { Task } from '@/types/task';
 
 const TaskListPage = () => {
