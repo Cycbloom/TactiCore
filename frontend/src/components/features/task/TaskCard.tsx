@@ -6,7 +6,14 @@ import {
   CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 
-import { TaskProps, TaskStatus, TaskPriority } from '@/types/task';
+import { Task, TaskStatus, TaskPriority } from '@/types/task';
+
+export interface TaskProps {
+  task: Task;
+  onEdit?: (task: Task) => void;
+  onDelete?: (id: string) => void;
+  onStatusChange?: (id: string, status: TaskStatus) => void;
+}
 
 const TaskCard: React.FC<TaskProps> = ({ task, onEdit, onDelete, onStatusChange }) => {
   const getPriorityColor = (priority: TaskPriority) => {
@@ -39,13 +46,28 @@ const TaskCard: React.FC<TaskProps> = ({ task, onEdit, onDelete, onStatusChange 
             {task.title}
           </Typography>
           <Stack direction="row" spacing={1}>
-            <IconButton size="small" onClick={() => onStatusChange?.(task.id, 'completed')}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                onStatusChange?.(task.id, task.status);
+              }}
+            >
               <CheckCircleIcon />
             </IconButton>
-            <IconButton size="small" onClick={() => onEdit?.(task.id)}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                onEdit?.(task);
+              }}
+            >
               <EditIcon />
             </IconButton>
-            <IconButton size="small" onClick={() => onDelete?.(task.id)}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                onDelete?.(task.id);
+              }}
+            >
               <DeleteIcon />
             </IconButton>
           </Stack>

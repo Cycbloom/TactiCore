@@ -17,13 +17,6 @@ export interface Task {
   updatedAt?: Date;
 }
 
-export interface TaskProps {
-  task: Task;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
-  onStatusChange?: (id: string, status: TaskStatus) => void;
-}
-
 // 状态选项
 export const statusOptions = [
   { value: 'todo', label: '待办' },

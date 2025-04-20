@@ -27,8 +27,14 @@ const DatePickerField = ({ name = 'dueDate', label = '截止日期' }: DatePicke
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const date = value ? new Date(value) : null;
-    setValue(name, date, { shouldValidate: true });
+    if (value) {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        setValue(name, date, { shouldValidate: true });
+      }
+    } else {
+      setValue(name, null, { shouldValidate: true });
+    }
   };
 
   return (

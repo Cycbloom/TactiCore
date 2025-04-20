@@ -36,7 +36,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialData, onSubmit, onCancel }) 
     description: initialData?.description || '',
     status: initialData?.status || 'todo',
     priority: initialData?.priority || 'medium',
-    dueDate: initialData?.dueDate,
+    dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : undefined,
     tags: initialData?.tags || []
   };
 

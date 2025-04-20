@@ -1,21 +1,17 @@
 import React from 'react';
-import { Box, Button, Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 
 import TaskFilter from './TaskFilter';
 
 import { FilterFormData } from '@/types/task';
 
-interface TaskListHeaderProps {
+interface TaskHeaderProps {
   filters: FilterFormData;
   onFilterChange: (filters: FilterFormData) => void;
   onCreateClick: () => void;
 }
 
-const TaskListHeader: React.FC<TaskListHeaderProps> = ({
-  filters,
-  onFilterChange,
-  onCreateClick
-}) => {
+const TaskHeader: React.FC<TaskHeaderProps> = ({ filters, onFilterChange, onCreateClick }) => {
   return (
     <Stack spacing={2} sx={{ mb: 3 }}>
       <TaskFilter filters={filters} onFilterChange={onFilterChange} />
@@ -26,6 +22,6 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
   );
 };
 
-TaskListHeader.displayName = 'TaskListHeader';
+TaskHeader.displayName = 'TaskHeader';
 
-export default TaskListHeader;
+export default TaskHeader;
