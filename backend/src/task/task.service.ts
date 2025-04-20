@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import { PrismaService } from '@/database/prisma.service';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -8,7 +9,6 @@ import {
   TaskStatus,
   TaskPriority,
 } from '@/task/task.schema';
-import { PrismaService } from '@/database/prisma.service';
 
 @Injectable()
 export class TaskService {
@@ -40,6 +40,17 @@ export class TaskService {
       ...(filter.tags && { tags: { hasSome: filter.tags } }),
       ...(filter.startDate && { dueDate: { gte: filter.startDate } }),
       ...(filter.endDate && { dueDate: { lte: filter.endDate } }),
+      ...(filter.search && {
+        OR: [
+          { title: { contains: filter.search, mode: 'insensitive' as const } },
+          {
+            description: {
+              contains: filter.search,
+              mode: 'insensitive' as const,
+            },
+          },
+        ],
+      }),
     };
 
     const tasks = await this.prisma.task.findMany({
