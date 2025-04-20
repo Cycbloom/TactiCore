@@ -51,12 +51,17 @@ const TaskListPage = () => {
     // 处理切换任务状态
   };
 
+  const handleFilterChange = (filters: FilterFormData) => {
+    // 处理过滤条件变化
+  };
+
   return (
     <TaskList
       tasks={tasks}
       onEditTask={handleEditTask}
       onDeleteTask={handleDeleteTask}
       onToggleStatus={handleToggleStatus}
+      onFilterChange={handleFilterChange}
     />
   );
 };

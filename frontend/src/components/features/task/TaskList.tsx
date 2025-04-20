@@ -1,49 +1,44 @@
 import React, { useState } from 'react';
-import { Box, Stack } from '@mui/material';
+import { Box, Button, Dialog, Stack } from '@mui/material';
 
 import TaskCard from './TaskCard';
 import TaskFilter from './TaskFilter';
+import TaskForm from './TaskForm';
 
-import { Task } from '@/types/task';
+import { Task, FilterFormData, TaskFormData } from '@/types/task';
 
 interface TaskListProps {
   tasks: Task[];
+  filters: FilterFormData;
+  onFilterChange: (filters: FilterFormData) => void;
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onToggleStatus: (taskId: string) => void;
+  onCreateTask: (task: TaskFormData) => void;
 }
 
-type FilterFormData = {
-  searchTerm: string;
-  statusFilter: 'all' | 'todo' | 'inProgress' | 'completed';
-  priorityFilter: 'all' | 'high' | 'medium' | 'low';
-};
-
-const TaskList: React.FC<TaskListProps> = ({ tasks, onEditTask, onDeleteTask, onToggleStatus }) => {
-  const [filters, setFilters] = useState<FilterFormData>({
-    searchTerm: '',
-    statusFilter: 'all',
-    priorityFilter: 'all'
-  });
-
-  const filteredTasks = tasks.filter((task: Task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      task.description?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-    const matchesStatus = filters.statusFilter === 'all' || task.status === filters.statusFilter;
-    const matchesPriority =
-      filters.priorityFilter === 'all' || task.priority === filters.priorityFilter;
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+const TaskList: React.FC<TaskListProps> = ({
+  tasks,
+  filters,
+  onFilterChange,
+  onEditTask,
+  onDeleteTask,
+  onToggleStatus,
+  onCreateTask
+}) => {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (
     <Box>
       <Stack spacing={2} sx={{ mb: 3 }}>
-        <TaskFilter onFilterChange={setFilters} />
+        <TaskFilter filters={filters} onFilterChange={onFilterChange} />
+        <Button variant="contained" onClick={() => setIsCreateDialogOpen(true)}>
+          创建任务
+        </Button>
       </Stack>
 
       <Stack spacing={2}>
-        {filteredTasks.map(task => (
+        {tasks.map(task => (
           <TaskCard
             key={task.id}
             task={task}
@@ -53,6 +48,17 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onEditTask, onDeleteTask, on
           />
         ))}
       </Stack>
+
+      <Dialog
+        open={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <TaskForm onSubmit={onCreateTask} onCancel={() => setIsCreateDialogOpen(false)} />
+        </Box>
+      </Dialog>
     </Box>
   );
 };

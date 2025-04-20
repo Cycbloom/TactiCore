@@ -8,13 +8,13 @@ export type TaskPriority = 'low' | 'medium' | 'high';
 export interface Task {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   status: TaskStatus;
-  dueDate?: Date;
   priority: TaskPriority;
+  dueDate?: Date;
   tags?: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface TaskProps {
@@ -58,3 +58,29 @@ export const taskSchema = z.object({
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;
+
+export type FilterFormData = {
+  search: string;
+  status: 'all' | 'todo' | 'inProgress' | 'completed';
+  priority: 'all' | 'high' | 'medium' | 'low';
+};
+
+export const filterSchema = z.object({
+  search: z.string(),
+  status: z.enum(['all', 'todo', 'inProgress', 'completed']),
+  priority: z.enum(['all', 'high', 'medium', 'low'])
+}) as z.ZodType<FilterFormData>;
+
+export const statusOptionsWithAll: SelectOption[] = [
+  { value: 'all', label: '全部状态' },
+  { value: 'todo', label: '待办' },
+  { value: 'inProgress', label: '进行中' },
+  { value: 'completed', label: '已完成' }
+];
+
+export const priorityOptionsWithAll: SelectOption[] = [
+  { value: 'all', label: '全部优先级' },
+  { value: 'high', label: '高' },
+  { value: 'medium', label: '中' },
+  { value: 'low', label: '低' }
+];

@@ -2,6 +2,7 @@ import React from 'react';
 import { Paper, Container, Box, Typography, Button } from '@mui/material';
 
 import { useAuth } from '@/contexts';
+import TaskPage from '@/pages/TaskPage';
 
 const DashboardForm: React.FC = () => {
   const { user, logout } = useAuth();
@@ -55,12 +56,7 @@ const DashboardForm: React.FC = () => {
             justifyContent: 'center'
           }}
         >
-          <Typography variant="h5" component="h2" gutterBottom>
-            欢迎来到您的仪表板
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            这里是受保护的内容区域。
-          </Typography>
+          <TaskPage />
         </Box>
       </Paper>
     </Container>

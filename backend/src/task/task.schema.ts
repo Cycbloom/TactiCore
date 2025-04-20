@@ -95,6 +95,11 @@ export class TaskResponseDto extends CreateTaskDto {
 }
 
 export class TaskFilterDto {
+  @ApiProperty({ description: '搜索关键词', required: false })
+  @IsString()
+  @IsOptional()
+  search?: string;
+
   @ApiProperty({ description: '任务状态', enum: TaskStatus, required: false })
   @IsEnum(TaskStatus)
   @IsOptional()
