@@ -11,8 +11,7 @@ type FormInputProps = TextFieldProps & {
 const FormInput = ({ name, label, validation, ...props }: FormInputProps) => {
   const {
     register,
-    formState: { errors },
-    watch
+    formState: { errors }
   } = useFormContext();
 
   return (
@@ -20,7 +19,6 @@ const FormInput = ({ name, label, validation, ...props }: FormInputProps) => {
       label={label}
       {...register(name, validation)}
       variant="outlined"
-      value={watch(name) || ''}
       fullWidth
       margin="normal"
       error={!!errors[name]}

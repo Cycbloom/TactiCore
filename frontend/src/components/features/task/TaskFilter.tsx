@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
+import debounce from 'lodash/debounce';
 
 import { BaseForm } from '@/components/common/forms';
 import FormInput from '@/components/common/form-controls/FormInput';
@@ -17,6 +18,15 @@ interface TaskFilterProps {
 }
 
 const TaskFilter: React.FC<TaskFilterProps> = ({ filters, onFilterChange }) => {
+  // 使用 useMemo 来创建 debounced 函数
+  const debouncedFilterChange = useMemo(
+    () =>
+      debounce((newFilters: FilterFormData) => {
+        onFilterChange(newFilters);
+      }, 300),
+    [onFilterChange]
+  );
+
   return (
     <BaseForm<FilterFormData>
       onSubmit={onFilterChange}
@@ -25,7 +35,7 @@ const TaskFilter: React.FC<TaskFilterProps> = ({ filters, onFilterChange }) => {
       formTitle=""
       submitButtonText=""
       resetAfterSubmit={false}
-      onFormDataChange={onFilterChange}
+      onFormDataChange={debouncedFilterChange}
     >
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
         <Box sx={{ flex: 2 }}>

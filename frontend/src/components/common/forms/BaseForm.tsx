@@ -10,6 +10,7 @@ import { ZodSchema } from 'zod';
 import { useCallback } from 'react';
 
 import FormProviderWrapper from './FormPrividerWrapper';
+import FormWithWatch from './FormWithWatch';
 
 interface BaseFormProps<T extends FieldValues> {
   onSubmit: SubmitHandler<T>;
@@ -47,40 +48,39 @@ const BaseForm = <T extends FieldValues>({
 
   return (
     <FormProviderWrapper<T> defaultValues={defaultValues} schema={schema}>
-      {({ handleSubmit, reset, watch }: UseFormReturn<T>) => {
-        // 在组件挂载时设置监听
-        watch(handleFormChange);
-
-        return (
-          <form
-            onSubmit={handleSubmit((data: T) => {
-              onSubmit(data);
-              if (resetAfterSubmit) {
-                reset(defaultValues as T);
-              }
-            })}
-          >
-            {formTitle && (
-              <Typography variant="h6" gutterBottom>
-                {formTitle}
-              </Typography>
-            )}
-            {children}
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-              {showCancelButton && onCancel && (
-                <Button variant="outlined" onClick={onCancel}>
-                  {cancelButtonText}
-                </Button>
+      {(methods: UseFormReturn<T>) => (
+        <FormWithWatch methods={methods} onFormDataChange={handleFormChange}>
+          {({ handleSubmit, reset }) => (
+            <form
+              onSubmit={handleSubmit((data: T) => {
+                onSubmit(data);
+                if (resetAfterSubmit) {
+                  reset(defaultValues as T);
+                }
+              })}
+            >
+              {formTitle && (
+                <Typography variant="h6" gutterBottom>
+                  {formTitle}
+                </Typography>
               )}
-              {submitButtonText && (
-                <Button variant="contained" color="primary" type="submit">
-                  {submitButtonText || '提交'}
-                </Button>
-              )}
-            </Box>
-          </form>
-        );
-      }}
+              {children}
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
+                {showCancelButton && onCancel && (
+                  <Button variant="outlined" onClick={onCancel}>
+                    {cancelButtonText}
+                  </Button>
+                )}
+                {submitButtonText && (
+                  <Button variant="contained" color="primary" type="submit">
+                    {submitButtonText || '提交'}
+                  </Button>
+                )}
+              </Box>
+            </form>
+          )}
+        </FormWithWatch>
+      )}
     </FormProviderWrapper>
   );
 };

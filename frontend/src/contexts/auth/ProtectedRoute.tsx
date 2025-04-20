@@ -5,14 +5,20 @@ import { useAuth } from './AuthProvider';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  showLoading?: boolean;
+  loadingComponent?: React.ReactNode;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  showLoading = true,
+  loadingComponent = <div>Loading...</div>
+}) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (isLoading && showLoading) {
+    return <>{loadingComponent}</>;
   }
 
   if (!user) {

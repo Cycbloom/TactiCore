@@ -1,13 +1,17 @@
-import React, { useEffect } from 'react';
-import { Box, Container, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Container, Typography, Dialog, CircularProgress } from '@mui/material';
 
 import useTaskStore from '../store/taskStore';
 import { taskApi } from '../services/api/taskApi';
 
-import { TaskList } from '@/components/features/task';
+import TaskListHeader from '@/components/features/task/TaskListHeader';
+import TaskListContent from '@/components/features/task/TaskListContent';
+import TaskForm from '@/components/features/task/TaskForm';
 import { Task, TaskFormData, FilterFormData } from '@/types/task';
+import { ProtectedRoute } from '@/contexts';
 
 const TaskPage: React.FC = () => {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const {
     tasks,
     loading,
@@ -87,16 +91,13 @@ const TaskPage: React.FC = () => {
       setLoading(true);
       const newTask = await taskApi.createTask(formData);
       addTask(newTask);
+      setIsCreateDialogOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : '创建任务失败');
     } finally {
       setLoading(false);
     }
   };
-
-  if (loading) {
-    return <Typography>加载中...</Typography>;
-  }
 
   if (error) {
     return <Typography color="error">{error}</Typography>;
@@ -108,15 +109,52 @@ const TaskPage: React.FC = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           任务管理
         </Typography>
-        <TaskList
-          tasks={tasks}
+
+        <TaskListHeader
           filters={filters as FilterFormData}
           onFilterChange={handleFilterChange}
-          onEditTask={handleEditTask}
-          onDeleteTask={handleDeleteTask}
-          onToggleStatus={handleToggleStatus}
-          onCreateTask={handleCreateTask}
+          onCreateClick={() => setIsCreateDialogOpen(true)}
         />
+
+        <Box sx={{ position: 'relative' }}>
+          {loading && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                zIndex: 1
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+          <ProtectedRoute showLoading={false}>
+            <TaskListContent
+              tasks={tasks}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              onToggleStatus={handleToggleStatus}
+            />
+          </ProtectedRoute>
+        </Box>
+
+        <Dialog
+          open={isCreateDialogOpen}
+          onClose={() => setIsCreateDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <Box sx={{ p: 3 }}>
+            <TaskForm onSubmit={handleCreateTask} onCancel={() => setIsCreateDialogOpen(false)} />
+          </Box>
+        </Dialog>
       </Box>
     </Container>
   );
