@@ -40,13 +40,6 @@ export const priorityOptions = [
 
 export type PriorityKey = (typeof priorityOptions)[number]['value'];
 
-// 标签类型
-export interface Tag {
-  id: string;
-  name: string;
-  color?: string;
-}
-
 // 表单数据类型
 export const taskSchema = z.object({
   title: z.string().min(1, '标题不能为空'),

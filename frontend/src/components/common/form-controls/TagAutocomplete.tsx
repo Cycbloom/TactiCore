@@ -4,7 +4,6 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useFormContext } from 'react-hook-form';
 
 import { useData } from '@/data/DataContext';
-import { Tag } from '@/types/task';
 
 interface TagAutocompleteProps {
   name?: string;
@@ -28,39 +27,16 @@ const TagAutocomplete = ({
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <Autocomplete
         multiple
+        freeSolo
         options={tags.data}
-        getOptionLabel={(option: Tag) => option.name}
         value={selectedTags}
         onChange={(_event, newValue) => {
           // 过滤掉重复的标签
           const uniqueTags = newValue.filter(
             (tag, index, self) =>
-              index === self.findIndex(t => t.name.toLowerCase() === tag.name.toLowerCase())
+              index === self.findIndex(t => t.toLowerCase() === tag.toLowerCase())
           );
           setValue(name, uniqueTags);
-        }}
-        onKeyDown={event => {
-          if (event.key === 'Enter') {
-            const inputValue = (event.target as HTMLInputElement).value;
-            if (!inputValue) return; // 如果输入为空
-
-            const firstOption = tags.data.find((option: Tag) =>
-              option.name.toLowerCase().includes(inputValue.toLowerCase())
-            );
-
-            if (firstOption) {
-              // 检查是否已经存在相同的标签
-              const isDuplicate = selectedTags.some(
-                (tag: Tag) => tag.name.toLowerCase() === firstOption.name.toLowerCase()
-              );
-
-              if (!isDuplicate) {
-                event.preventDefault();
-                const newValue = [...selectedTags, firstOption];
-                setValue(name, newValue);
-              }
-            }
-          }
         }}
         renderInput={params => (
           <TextField {...params} variant="outlined" placeholder={placeholder} />
@@ -68,7 +44,7 @@ const TagAutocomplete = ({
         renderTags={(value, getTagProps) =>
           value.map((option, index) => {
             const { key, ...otherProps } = getTagProps({ index });
-            return <Chip key={key} label={option.name} {...otherProps} />;
+            return <Chip key={key} label={option} {...otherProps} />;
           })
         }
         sx={{ flex: 1 }}
