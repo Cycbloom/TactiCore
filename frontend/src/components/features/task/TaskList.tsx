@@ -9,7 +9,7 @@ interface TaskListProps {
   tasks: Task[];
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
-  onToggleStatus: (taskId: string, status: TaskStatus) => void;
+  onToggleStatus: (taskId: string) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({ tasks, onEditTask, onDeleteTask, onToggleStatus }) => {
@@ -20,7 +20,6 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onEditTask, onDeleteTask, on
           key={task.id}
           task={task}
           onEdit={task => {
-            console.log('TaskListContent: onEdit called with task:', task);
             onEditTask(task);
           }}
           onDelete={onDeleteTask}

@@ -12,7 +12,7 @@ export interface TaskProps {
   task: Task;
   onEdit?: (task: Task) => void;
   onDelete?: (id: string) => void;
-  onStatusChange?: (id: string, status: TaskStatus) => void;
+  onStatusChange?: (id: string) => void;
 }
 
 const TaskCard: React.FC<TaskProps> = ({ task, onEdit, onDelete, onStatusChange }) => {
@@ -49,7 +49,7 @@ const TaskCard: React.FC<TaskProps> = ({ task, onEdit, onDelete, onStatusChange 
             <IconButton
               size="small"
               onClick={() => {
-                onStatusChange?.(task.id, task.status);
+                onStatusChange?.(task.id);
               }}
             >
               <CheckCircleIcon />

@@ -12,13 +12,13 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { TaskService } from './task.service';
-
 import {
   CreateTaskDto,
   UpdateTaskDto,
   TaskResponseDto,
   TaskFilterDto,
-} from '@/task/task.schema';
+} from './dto';
+
 import { JwtAuthGuard } from '@/core/auth/guards/jwt-auth.guard';
 
 @ApiTags('tasks')

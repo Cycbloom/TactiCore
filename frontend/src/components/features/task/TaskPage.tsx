@@ -88,7 +88,7 @@ const TaskPage: React.FC = () => {
       if (!task) return;
 
       const newStatus = task.status === 'completed' ? 'todo' : 'completed';
-      const updatedTask = await taskApi.updateTask(taskId, { ...task, status: newStatus });
+      const updatedTask = await taskApi.updateTask(taskId, { status: newStatus });
       updateTask(updatedTask);
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新任务状态失败');
@@ -110,10 +110,6 @@ const TaskPage: React.FC = () => {
     }
   };
 
-  if (error) {
-    return <Typography color="error">{error}</Typography>;
-  }
-
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
@@ -126,6 +122,8 @@ const TaskPage: React.FC = () => {
           onFilterChange={handleFilterChange}
           onCreateClick={() => setIsCreateDialogOpen(true)}
         />
+
+        {error && <Typography color="error">{error}</Typography>}
 
         <Box sx={{ position: 'relative' }}>
           {loading && (
