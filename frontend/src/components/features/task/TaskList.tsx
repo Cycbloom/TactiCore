@@ -10,9 +10,16 @@ interface TaskListProps {
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onToggleStatus: (taskId: string) => void;
+  onAddSubtask: (parentId: string) => void;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, onEditTask, onDeleteTask, onToggleStatus }) => {
+const TaskList: React.FC<TaskListProps> = ({
+  tasks,
+  onEditTask,
+  onDeleteTask,
+  onToggleStatus,
+  onAddSubtask
+}) => {
   return (
     <Stack spacing={2}>
       {tasks.map(task => (
@@ -24,6 +31,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onEditTask, onDeleteTask, on
           }}
           onDelete={onDeleteTask}
           onStatusChange={onToggleStatus}
+          onAddSubtask={onAddSubtask}
         />
       ))}
     </Stack>

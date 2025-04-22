@@ -12,6 +12,7 @@ import { Task, TaskFormData, FilterFormData } from '@/types/task';
 const TaskPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [parentTaskId, setParentTaskId] = useState<string | undefined>();
   const {
     tasks,
     loading,
@@ -52,6 +53,7 @@ const TaskPage: React.FC = () => {
 
   const handleCloseEditDialog = () => {
     setEditingTask(null);
+    setParentTaskId(undefined);
   };
 
   const handleSubmitEdit = async (formData: TaskFormData) => {
@@ -100,14 +102,25 @@ const TaskPage: React.FC = () => {
   const handleCreateTask = async (formData: TaskFormData) => {
     try {
       setLoading(true);
-      const newTask = await taskApi.createTask(formData);
+      const newTask = await taskApi.createTask({
+        ...formData,
+        parentId: parentTaskId,
+        level: parentTaskId ? 1 : 0,
+        order: tasks.filter(t => t.parentId === parentTaskId).length
+      });
       addTask(newTask);
       setIsCreateDialogOpen(false);
+      setParentTaskId(undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : '创建任务失败');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddSubtask = (parentId: string) => {
+    setParentTaskId(parentId);
+    setIsCreateDialogOpen(true);
   };
 
   return (
@@ -120,7 +133,10 @@ const TaskPage: React.FC = () => {
         <TaskHeader
           filters={filters as FilterFormData}
           onFilterChange={handleFilterChange}
-          onCreateClick={() => setIsCreateDialogOpen(true)}
+          onCreateClick={() => {
+            setParentTaskId(undefined);
+            setIsCreateDialogOpen(true);
+          }}
         />
 
         {error && <Typography color="error">{error}</Typography>}
@@ -145,21 +161,32 @@ const TaskPage: React.FC = () => {
             </Box>
           )}
           <TaskList
-            tasks={tasks}
+            tasks={tasks.filter(task => !task.parentId)}
             onEditTask={handleEditTask}
             onDeleteTask={handleDeleteTask}
             onToggleStatus={handleToggleStatus}
+            onAddSubtask={handleAddSubtask}
           />
         </Box>
 
         <Dialog
           open={isCreateDialogOpen}
-          onClose={() => setIsCreateDialogOpen(false)}
+          onClose={() => {
+            setIsCreateDialogOpen(false);
+            setParentTaskId(undefined);
+          }}
           maxWidth="sm"
           fullWidth
         >
           <Box sx={{ p: 3 }}>
-            <TaskForm onSubmit={handleCreateTask} onCancel={() => setIsCreateDialogOpen(false)} />
+            <TaskForm
+              onSubmit={handleCreateTask}
+              onCancel={() => {
+                setIsCreateDialogOpen(false);
+                setParentTaskId(undefined);
+              }}
+              initialData={parentTaskId ? { parentId: parentTaskId } : undefined}
+            />
           </Box>
         </Dialog>
 

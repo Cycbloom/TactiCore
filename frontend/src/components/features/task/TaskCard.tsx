@@ -1,9 +1,21 @@
-import React from 'react';
-import { Card, CardContent, Typography, Chip, IconButton, Box, Stack } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Chip,
+  IconButton,
+  Box,
+  Stack,
+  Collapse
+} from '@mui/material';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  Add as AddIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
 
 import { Task, TaskStatus, TaskPriority } from '@/types/task';
@@ -13,9 +25,20 @@ export interface TaskProps {
   onEdit?: (task: Task) => void;
   onDelete?: (id: string) => void;
   onStatusChange?: (id: string) => void;
+  onAddSubtask?: (parentId: string) => void;
+  level?: number;
 }
 
-const TaskCard: React.FC<TaskProps> = ({ task, onEdit, onDelete, onStatusChange }) => {
+const TaskCard: React.FC<TaskProps> = ({
+  task,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  onAddSubtask,
+  level = 0
+}) => {
+  const [expanded, setExpanded] = useState(false);
+
   const getPriorityColor = (priority: TaskPriority) => {
     switch (priority) {
       case 'high':
@@ -38,13 +61,24 @@ const TaskCard: React.FC<TaskProps> = ({ task, onEdit, onDelete, onStatusChange 
     }
   };
 
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
+
   return (
-    <Card sx={{ mb: 2 }}>
+    <Card sx={{ mb: 2, ml: level * 2 }}>
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6" component="div">
-            {task.title}
-          </Typography>
+          <Box display="flex" alignItems="center">
+            {task.children && task.children.length > 0 && (
+              <IconButton size="small" onClick={handleExpandClick}>
+                {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </IconButton>
+            )}
+            <Typography variant="h6" component="div">
+              {task.title}
+            </Typography>
+          </Box>
           <Stack direction="row" spacing={1}>
             <IconButton
               size="small"
@@ -69,6 +103,14 @@ const TaskCard: React.FC<TaskProps> = ({ task, onEdit, onDelete, onStatusChange 
               }}
             >
               <DeleteIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={() => {
+                onAddSubtask?.(task.id);
+              }}
+            >
+              <AddIcon />
             </IconButton>
           </Stack>
         </Box>
@@ -101,6 +143,24 @@ const TaskCard: React.FC<TaskProps> = ({ task, onEdit, onDelete, onStatusChange 
               ))}
             </Stack>
           </Box>
+        )}
+
+        {task.children && task.children.length > 0 && (
+          <Collapse in={expanded}>
+            <Box sx={{ mt: 2 }}>
+              {task.children.map(child => (
+                <TaskCard
+                  key={child.id}
+                  task={child}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onStatusChange={onStatusChange}
+                  onAddSubtask={onAddSubtask}
+                  level={level + 1}
+                />
+              ))}
+            </Box>
+          </Collapse>
         )}
       </CardContent>
     </Card>

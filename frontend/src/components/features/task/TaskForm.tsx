@@ -19,7 +19,10 @@ const taskSchema = z.object({
   status: z.enum(['todo', 'inProgress', 'completed']),
   priority: z.enum(['low', 'medium', 'high']),
   dueDate: z.date().optional(),
-  tags: z.array(z.string()).optional()
+  tags: z.array(z.string()).optional(),
+  parentId: z.string().optional(),
+  level: z.number(),
+  order: z.number()
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -37,18 +40,21 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialData, onSubmit, onCancel }) 
     status: initialData?.status || 'todo',
     priority: initialData?.priority || 'medium',
     dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : undefined,
-    tags: initialData?.tags || []
+    tags: initialData?.tags || [],
+    parentId: initialData?.parentId,
+    level: initialData?.level || 0,
+    order: initialData?.order || 0
   };
 
   return (
     <BaseForm<TaskFormData>
-      onSubmit={onSubmit}
       defaultValues={defaultValues}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
       schema={taskSchema}
       formTitle={initialData ? '编辑任务' : '创建任务'}
       submitButtonText={initialData ? '更新' : '创建'}
       resetAfterSubmit={true}
-      onCancel={onCancel}
     >
       <Stack spacing={3}>
         <FormInput
