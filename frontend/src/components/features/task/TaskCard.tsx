@@ -104,14 +104,16 @@ const TaskCard: React.FC<TaskProps> = ({
             >
               <DeleteIcon />
             </IconButton>
-            <IconButton
-              size="small"
-              onClick={() => {
-                onAddSubtask?.(task.id);
-              }}
-            >
-              <AddIcon />
-            </IconButton>
+            {level < 2 && (
+              <IconButton
+                size="small"
+                onClick={() => {
+                  onAddSubtask?.(task.id);
+                }}
+              >
+                <AddIcon />
+              </IconButton>
+            )}
           </Stack>
         </Box>
 

@@ -108,7 +108,32 @@ const TaskPage: React.FC = () => {
         level: parentTaskId ? 1 : 0,
         order: tasks.filter(t => t.parentId === parentTaskId).length
       });
-      addTask(newTask);
+
+      if (parentTaskId) {
+        const updateTaskTree = (taskList: Task[]): Task[] => {
+          return taskList.map(task => {
+            if (task.id === parentTaskId) {
+              return {
+                ...task,
+                children: [...(task.children || []), newTask]
+              };
+            }
+            if (task.children) {
+              return {
+                ...task,
+                children: updateTaskTree(task.children)
+              };
+            }
+            return task;
+          });
+        };
+
+        const updatedTasks = updateTaskTree(tasks);
+        setTasks(updatedTasks);
+      } else {
+        addTask(newTask);
+      }
+
       setIsCreateDialogOpen(false);
       setParentTaskId(undefined);
     } catch (err) {
@@ -186,6 +211,8 @@ const TaskPage: React.FC = () => {
                 setParentTaskId(undefined);
               }}
               initialData={parentTaskId ? { parentId: parentTaskId } : undefined}
+              formTitle={parentTaskId ? '创建子任务' : '创建任务'}
+              submitText={parentTaskId ? '创建子任务' : '创建任务'}
             />
           </Box>
         </Dialog>

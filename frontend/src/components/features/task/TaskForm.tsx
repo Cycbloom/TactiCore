@@ -31,9 +31,17 @@ interface TaskFormProps {
   initialData?: Partial<Task>;
   onSubmit: SubmitHandler<TaskFormData>;
   onCancel: () => void;
+  formTitle?: string;
+  submitText?: string;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ initialData, onSubmit, onCancel }) => {
+const TaskForm: React.FC<TaskFormProps> = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  formTitle,
+  submitText
+}) => {
   const defaultValues: TaskFormData = {
     title: initialData?.title || '',
     description: initialData?.description || '',
@@ -52,8 +60,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialData, onSubmit, onCancel }) 
       onSubmit={onSubmit}
       onCancel={onCancel}
       schema={taskSchema}
-      formTitle={initialData ? '编辑任务' : '创建任务'}
-      submitButtonText={initialData ? '更新' : '创建'}
+      formTitle={formTitle || (initialData ? '编辑任务' : '创建任务')}
+      submitButtonText={submitText || (initialData ? '更新' : '创建')}
       resetAfterSubmit={true}
     >
       <Stack spacing={3}>
