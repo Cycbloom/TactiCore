@@ -8,6 +8,8 @@ import {
   Param,
   Query,
   UseGuards,
+  Patch,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -21,22 +23,20 @@ import {
 
 import { JwtAuthGuard } from '@/core/auth/guards/jwt-auth.guard';
 
-@ApiTags('tasks')
+@ApiTags('任务')
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Post()
-  @ApiOperation({ summary: '创建新任务' })
+  @ApiOperation({ summary: '创建任务' })
   @ApiResponse({
     status: 201,
     description: '任务创建成功',
     type: TaskResponseDto,
   })
-  async createTask(
-    @Body() createTaskDto: CreateTaskDto,
-  ): Promise<TaskResponseDto> {
+  create(@Body() createTaskDto: CreateTaskDto): Promise<TaskResponseDto> {
     return this.taskService.createTask(createTaskDto);
   }
 
@@ -44,10 +44,10 @@ export class TaskController {
   @ApiOperation({ summary: '获取任务列表' })
   @ApiResponse({
     status: 200,
-    description: '返回任务列表',
+    description: '获取任务列表成功',
     type: [TaskResponseDto],
   })
-  async getTasks(@Query() filter: TaskFilterDto): Promise<TaskResponseDto[]> {
+  findAll(@Query() filter: TaskFilterDto): Promise<TaskResponseDto[]> {
     return this.taskService.getTasks(filter);
   }
 
@@ -55,22 +55,22 @@ export class TaskController {
   @ApiOperation({ summary: '获取任务详情' })
   @ApiResponse({
     status: 200,
-    description: '返回任务详情',
+    description: '获取任务详情成功',
     type: TaskResponseDto,
   })
-  async getTask(@Param('id') id: string): Promise<TaskResponseDto> {
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<TaskResponseDto> {
     return this.taskService.getTask(id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: '更新任务' })
   @ApiResponse({
     status: 200,
     description: '任务更新成功',
     type: TaskResponseDto,
   })
-  async updateTask(
-    @Param('id') id: string,
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTaskDto: UpdateTaskDto,
   ): Promise<TaskResponseDto> {
     return this.taskService.updateTask(id, updateTaskDto);
@@ -78,8 +78,52 @@ export class TaskController {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除任务' })
-  @ApiResponse({ status: 200, description: '任务删除成功' })
-  async deleteTask(@Param('id') id: string): Promise<void> {
+  @ApiResponse({
+    status: 200,
+    description: '任务删除成功',
+  })
+  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.taskService.deleteTask(id);
+  }
+
+  @Get(':id/children')
+  @ApiOperation({ summary: '获取子任务列表' })
+  @ApiResponse({
+    status: 200,
+    description: '获取子任务列表成功',
+    type: [TaskResponseDto],
+  })
+  getChildren(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<TaskResponseDto[]> {
+    return this.taskService.getTaskChildren(id);
+  }
+
+  @Post(':id/children')
+  @ApiOperation({ summary: '创建子任务' })
+  @ApiResponse({
+    status: 201,
+    description: '子任务创建成功',
+    type: TaskResponseDto,
+  })
+  createChild(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() createTaskDto: CreateTaskDto,
+  ): Promise<TaskResponseDto> {
+    return this.taskService.createTask({ ...createTaskDto, parentId: id });
+  }
+
+  @Patch(':id/order')
+  @ApiOperation({ summary: '更新任务顺序' })
+  @ApiResponse({
+    status: 200,
+    description: '任务顺序更新成功',
+    type: TaskResponseDto,
+  })
+  updateOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('order') order: number,
+  ): Promise<TaskResponseDto> {
+    return this.taskService.updateTask(id, { order });
   }
 }

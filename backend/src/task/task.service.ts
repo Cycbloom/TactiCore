@@ -20,15 +20,40 @@ export class TaskService {
       ...task,
       status: task.status as TaskStatus,
       priority: task.priority as TaskPriority,
+      children: task.children?.map((child) =>
+        this.convertToTaskResponseDto(child),
+      ),
     };
   }
 
   async createTask(createTaskDto: CreateTaskDto): Promise<TaskResponseDto> {
+    if (createTaskDto.parentId) {
+      const parentTask = await this.prisma.task.findUnique({
+        where: { id: createTaskDto.parentId },
+      });
+
+      if (!parentTask) {
+        throw new NotFoundException(
+          `Parent task with ID ${createTaskDto.parentId} not found`,
+        );
+      }
+
+      createTaskDto.level = (parentTask.level || 0) + 1;
+    }
+
+    const siblingTasks = await this.prisma.task.count({
+      where: { parentId: createTaskDto.parentId },
+    });
+
     const task = await this.prisma.task.create({
       data: {
         ...createTaskDto,
         status: createTaskDto.status || TaskStatus.TODO,
         priority: createTaskDto.priority || TaskPriority.MEDIUM,
+        order: createTaskDto.order || siblingTasks,
+      },
+      include: {
+        children: true,
       },
     });
     return this.convertToTaskResponseDto(task);
@@ -52,12 +77,19 @@ export class TaskService {
           },
         ],
       }),
+      parentId: null,
     };
 
     const tasks = await this.prisma.task.findMany({
       where,
-      orderBy: {
-        createdAt: 'desc',
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+      include: {
+        children: {
+          orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+          include: {
+            children: true,
+          },
+        },
       },
     });
     return tasks.map((task) => this.convertToTaskResponseDto(task));
@@ -66,6 +98,14 @@ export class TaskService {
   async getTask(id: string): Promise<TaskResponseDto> {
     const task = await this.prisma.task.findUnique({
       where: { id },
+      include: {
+        children: {
+          orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+          include: {
+            children: true,
+          },
+        },
+      },
     });
 
     if (!task) {
@@ -81,15 +121,51 @@ export class TaskService {
   ): Promise<TaskResponseDto> {
     const task = await this.prisma.task.findUnique({
       where: { id },
+      include: { children: true },
     });
 
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
 
+    if (
+      updateTaskDto.parentId !== undefined &&
+      updateTaskDto.parentId !== task.parentId
+    ) {
+      if (updateTaskDto.parentId) {
+        const parentTask = await this.prisma.task.findUnique({
+          where: { id: updateTaskDto.parentId },
+        });
+
+        if (!parentTask) {
+          throw new NotFoundException(
+            `Parent task with ID ${updateTaskDto.parentId} not found`,
+          );
+        }
+
+        if (await this.wouldCreateCycle(id, updateTaskDto.parentId)) {
+          throw new Error('Cannot create cyclic dependency between tasks');
+        }
+
+        updateTaskDto.level = (parentTask.level || 0) + 1;
+      } else {
+        updateTaskDto.level = 0;
+      }
+
+      await this.updateChildrenLevels(task, updateTaskDto.level || 0);
+    }
+
     const updatedTask = await this.prisma.task.update({
       where: { id },
       data: updateTaskDto,
+      include: {
+        children: {
+          orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+          include: {
+            children: true,
+          },
+        },
+      },
     });
 
     return this.convertToTaskResponseDto(updatedTask);
@@ -107,5 +183,79 @@ export class TaskService {
     await this.prisma.task.delete({
       where: { id },
     });
+  }
+
+  private async wouldCreateCycle(
+    taskId: string,
+    newParentId: string,
+  ): Promise<boolean> {
+    let currentId = newParentId;
+    const visited = new Set<string>();
+
+    while (currentId) {
+      if (currentId === taskId) {
+        return true;
+      }
+
+      if (visited.has(currentId)) {
+        return true;
+      }
+
+      visited.add(currentId);
+
+      const parent = await this.prisma.task.findUnique({
+        where: { id: currentId },
+        select: { parentId: true },
+      });
+
+      if (!parent) {
+        break;
+      }
+
+      if (!parent.parentId) break;
+      currentId = parent.parentId;
+    }
+
+    return false;
+  }
+
+  private async updateChildrenLevels(
+    task: any,
+    parentLevel: number,
+  ): Promise<void> {
+    if (!task.children?.length) {
+      return;
+    }
+
+    const childLevel = parentLevel + 1;
+    await Promise.all(
+      task.children.map(async (child: any) => {
+        await this.prisma.task.update({
+          where: { id: child.id },
+          data: { level: childLevel },
+        });
+        await this.updateChildrenLevels(child, childLevel);
+      }),
+    );
+  }
+
+  async getTaskChildren(id: string): Promise<TaskResponseDto[]> {
+    const task = await this.prisma.task.findUnique({
+      where: { id },
+      include: {
+        children: {
+          orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+          include: {
+            children: true,
+          },
+        },
+      },
+    });
+
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+
+    return task.children.map((child) => this.convertToTaskResponseDto(child));
   }
 }

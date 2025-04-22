@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Task" ADD COLUMN     "level" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "order" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "parentId" TEXT;
+
+-- AddForeignKey
+ALTER TABLE "Task" ADD CONSTRAINT "Task_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;

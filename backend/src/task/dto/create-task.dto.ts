@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsDate, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsDate,
+  IsArray,
+  IsNumber,
+  IsUUID,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { TaskStatus, TaskPriority } from './task.enum';
@@ -43,4 +51,19 @@ export class CreateTaskDto {
   @IsString({ each: true })
   @IsOptional()
   tags?: string[];
+
+  @ApiProperty({ description: '父任务ID', required: false })
+  @IsUUID()
+  @IsOptional()
+  parentId?: string;
+
+  @ApiProperty({ description: '任务层级', required: false, default: 0 })
+  @IsNumber()
+  @IsOptional()
+  level?: number;
+
+  @ApiProperty({ description: '同级任务排序', required: false, default: 0 })
+  @IsNumber()
+  @IsOptional()
+  order?: number;
 }

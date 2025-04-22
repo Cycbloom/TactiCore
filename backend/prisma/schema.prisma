@@ -41,4 +41,9 @@ model Task {
   tags        String[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  parentId    String?
+  parent      Task?        @relation("TaskToSubtask", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Task[]       @relation("TaskToSubtask")
+  level       Int         @default(0)
+  order       Int         @default(0)
 }
