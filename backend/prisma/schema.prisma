@@ -3,11 +3,13 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("POSTGRES_URL")
+  extensions = [pg_trgm]
 }
 
 enum TaskStatus {
@@ -46,4 +48,27 @@ model Task {
   children    Task[]       @relation("TaskToSubtask")
   level       Int         @default(0)
   order       Int         @default(0)
+  path        String[]    @default([])
+
+  @@index([parentId])
+}
+
+// 添加数据库函数
+model DatabaseFunction {
+  id String @id @default(uuid())
+  name String
+  definition String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 添加数据库触发器
+model DatabaseTrigger {
+  id String @id @default(uuid())
+  name String
+  table String
+  event String
+  function String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -7,7 +7,8 @@ import {
   IconButton,
   Box,
   Stack,
-  Collapse
+  Collapse,
+  Tooltip
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -15,7 +16,8 @@ import {
   CheckCircle as CheckCircleIcon,
   Add as AddIcon,
   ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon
+  ExpandLess as ExpandLessIcon,
+  AccountTree as AccountTreeIcon
 } from '@mui/icons-material';
 
 import { Task, TaskStatus, TaskPriority } from '@/types/task';
@@ -144,6 +146,19 @@ const TaskCard: React.FC<TaskProps> = ({
                 <Chip key={tag} label={tag} size="small" variant="outlined" />
               ))}
             </Stack>
+          </Box>
+        )}
+
+        {task.path && task.path.length > 0 && (
+          <Box sx={{ mt: 1 }}>
+            <Tooltip title="任务路径">
+              <Stack direction="row" spacing={1} alignItems="center">
+                <AccountTreeIcon fontSize="small" color="action" />
+                <Typography variant="caption" color="text.secondary">
+                  {task.path.join(' > ')}
+                </Typography>
+              </Stack>
+            </Tooltip>
           </Box>
         )}
 

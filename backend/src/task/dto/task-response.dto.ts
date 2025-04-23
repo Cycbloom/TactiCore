@@ -45,4 +45,7 @@ export class TaskResponseDto {
 
   @ApiProperty({ description: '同级任务排序', default: 0 })
   order: number;
+
+  @ApiProperty({ description: '任务路径', type: [String] })
+  path: string[];
 }

@@ -2,23 +2,33 @@ import * as z from 'zod';
 
 import { SelectOption } from '@/components/common/form-controls';
 
-export type TaskStatus = 'todo' | 'inProgress' | 'completed';
-export type TaskPriority = 'low' | 'medium' | 'high';
+export enum TaskStatus {
+  TODO = 'todo',
+  IN_PROGRESS = 'inProgress',
+  COMPLETED = 'completed'
+}
+
+export enum TaskPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high'
+}
 
 export interface Task {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   status: TaskStatus;
   priority: TaskPriority;
   dueDate?: Date;
   tags?: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
   parentId?: string;
   children?: Task[];
   level: number;
   order: number;
+  path: string[];
 }
 
 // 状态选项
