@@ -1,7 +1,9 @@
 import React from 'react';
 import { ThemeProvider, CssBaseline, Box } from '@mui/material';
 import { useState, useMemo } from 'react';
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider, BrowserRouter } from 'react-router-dom';
+
+import { ErrorProvider } from './utils/error-handler';
 
 import { AuthProvider } from '@/contexts';
 import { Console, ThemeToggle } from '@/components/features';
@@ -16,14 +18,16 @@ const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AuthProvider>
-        <DataProvider>
-          <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
-            <ThemeToggle onToggle={() => setIsDarkMode(!isDarkMode)} />
-          </Box>
-          <RouterProvider router={router} />
-        </DataProvider>
-      </AuthProvider>
+      <ErrorProvider>
+        <AuthProvider>
+          <DataProvider>
+            <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
+              <ThemeToggle onToggle={() => setIsDarkMode(!isDarkMode)} />
+            </Box>
+            <RouterProvider router={router} />
+          </DataProvider>
+        </AuthProvider>
+      </ErrorProvider>
     </ThemeProvider>
   );
 };

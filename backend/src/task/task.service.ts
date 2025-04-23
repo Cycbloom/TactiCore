@@ -10,6 +10,10 @@ import {
 } from './dto';
 
 import { PrismaService } from '@/database/prisma.service';
+import {
+  BusinessException,
+  ValidationException,
+} from '@/core/exceptions/business.exception';
 
 @Injectable()
 export class TaskService {
@@ -27,36 +31,50 @@ export class TaskService {
   }
 
   async createTask(createTaskDto: CreateTaskDto): Promise<TaskResponseDto> {
-    if (createTaskDto.parentId) {
-      const parentTask = await this.prisma.task.findUnique({
-        where: { id: createTaskDto.parentId },
-      });
+    try {
+      if (createTaskDto.parentId) {
+        const parentTask = await this.prisma.task.findUnique({
+          where: { id: createTaskDto.parentId },
+        });
 
-      if (!parentTask) {
-        throw new NotFoundException(
-          `Parent task with ID ${createTaskDto.parentId} not found`,
-        );
+        if (!parentTask) {
+          throw new NotFoundException(
+            `Parent task with ID ${createTaskDto.parentId} not found`,
+          );
+        }
+
+        if (parentTask.level >= 2) {
+          throw new ValidationException('任务层级不能超过3层', {
+            currentLevel: parentTask.level,
+            maxLevel: 2,
+          });
+        }
+
+        createTaskDto.level = (parentTask.level || 0) + 1;
       }
 
-      createTaskDto.level = (parentTask.level || 0) + 1;
+      const siblingTasks = await this.prisma.task.count({
+        where: { parentId: createTaskDto.parentId },
+      });
+
+      const task = await this.prisma.task.create({
+        data: {
+          ...createTaskDto,
+          status: createTaskDto.status || TaskStatus.TODO,
+          priority: createTaskDto.priority || TaskPriority.MEDIUM,
+          order: createTaskDto.order || siblingTasks,
+        },
+        include: {
+          children: true,
+        },
+      });
+      return this.convertToTaskResponseDto(task);
+    } catch (error) {
+      if (error instanceof BusinessException) {
+        throw error;
+      }
+      throw new BusinessException('创建任务失败', { error: error.message });
     }
-
-    const siblingTasks = await this.prisma.task.count({
-      where: { parentId: createTaskDto.parentId },
-    });
-
-    const task = await this.prisma.task.create({
-      data: {
-        ...createTaskDto,
-        status: createTaskDto.status || TaskStatus.TODO,
-        priority: createTaskDto.priority || TaskPriority.MEDIUM,
-        order: createTaskDto.order || siblingTasks,
-      },
-      include: {
-        children: true,
-      },
-    });
-    return this.convertToTaskResponseDto(task);
   }
 
   async getTasks(filter: TaskFilterDto): Promise<TaskResponseDto[]> {
@@ -119,56 +137,70 @@ export class TaskService {
     id: string,
     updateTaskDto: UpdateTaskDto,
   ): Promise<TaskResponseDto> {
-    const task = await this.prisma.task.findUnique({
-      where: { id },
-      include: { children: true },
-    });
+    try {
+      const task = await this.prisma.task.findUnique({
+        where: { id },
+        include: { children: true },
+      });
 
-    if (!task) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
-    }
-
-    if (
-      updateTaskDto.parentId !== undefined &&
-      updateTaskDto.parentId !== task.parentId
-    ) {
-      if (updateTaskDto.parentId) {
-        const parentTask = await this.prisma.task.findUnique({
-          where: { id: updateTaskDto.parentId },
-        });
-
-        if (!parentTask) {
-          throw new NotFoundException(
-            `Parent task with ID ${updateTaskDto.parentId} not found`,
-          );
-        }
-
-        if (await this.wouldCreateCycle(id, updateTaskDto.parentId)) {
-          throw new Error('Cannot create cyclic dependency between tasks');
-        }
-
-        updateTaskDto.level = (parentTask.level || 0) + 1;
-      } else {
-        updateTaskDto.level = 0;
+      if (!task) {
+        throw new NotFoundException(`Task with ID ${id} not found`);
       }
 
-      await this.updateChildrenLevels(task, updateTaskDto.level || 0);
-    }
+      if (
+        updateTaskDto.parentId !== undefined &&
+        updateTaskDto.parentId !== task.parentId
+      ) {
+        if (updateTaskDto.parentId) {
+          const parentTask = await this.prisma.task.findUnique({
+            where: { id: updateTaskDto.parentId },
+          });
 
-    const updatedTask = await this.prisma.task.update({
-      where: { id },
-      data: updateTaskDto,
-      include: {
-        children: {
-          orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
-          include: {
-            children: true,
+          if (!parentTask) {
+            throw new NotFoundException(
+              `Parent task with ID ${updateTaskDto.parentId} not found`,
+            );
+          }
+
+          if (await this.wouldCreateCycle(id, updateTaskDto.parentId)) {
+            throw new BusinessException('不能创建循环依赖关系');
+          }
+
+          if (parentTask.level >= 2) {
+            throw new ValidationException('任务层级不能超过3层', {
+              currentLevel: parentTask.level,
+              maxLevel: 2,
+            });
+          }
+
+          updateTaskDto.level = (parentTask.level || 0) + 1;
+        } else {
+          updateTaskDto.level = 0;
+        }
+
+        await this.updateChildrenLevels(task, updateTaskDto.level || 0);
+      }
+
+      const updatedTask = await this.prisma.task.update({
+        where: { id },
+        data: updateTaskDto,
+        include: {
+          children: {
+            orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+            include: {
+              children: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    return this.convertToTaskResponseDto(updatedTask);
+      return this.convertToTaskResponseDto(updatedTask);
+    } catch (error) {
+      if (error instanceof BusinessException) {
+        throw error;
+      }
+      throw new BusinessException('更新任务失败', { error: error.message });
+    }
   }
 
   async deleteTask(id: string): Promise<void> {

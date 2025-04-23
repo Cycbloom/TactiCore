@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
+import { handleError } from '@/utils/error-handler';
+
 // 创建 axios 实例
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000', // API 的基础URL
@@ -21,6 +23,7 @@ service.interceptors.request.use(
     return config;
   },
   error => {
+    handleError(error);
     return Promise.reject(error);
   }
 );
@@ -31,27 +34,15 @@ service.interceptors.response.use(
     return response.data;
   },
   error => {
+    handleError(error);
     if (error.response) {
       switch (error.response.status) {
         case 401:
           localStorage.removeItem('token');
           window.location.href = '/login';
-          console.log('401');
-          break;
-        case 403:
-          // 权限不足
-          console.error('没有权限访问该资源');
-          break;
-        case 404:
-          // 请求的资源不存在
-          console.error('请求的资源不存在');
-          break;
-        case 500:
-          // 服务器错误
-          console.error('服务器错误');
           break;
         default:
-          console.error('发生错误:', error.response.data);
+          break;
       }
     }
     return Promise.reject(error);
