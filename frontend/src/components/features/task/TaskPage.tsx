@@ -71,11 +71,12 @@ const TaskPage: React.FC = () => {
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
+  const handleDeleteTask = async (taskPath: string[]) => {
     try {
       setLoading(true);
+      const taskId = taskPath[taskPath.length - 1];
       await taskApi.deleteTask(taskId);
-      deleteTask(taskId);
+      deleteTask(taskPath);
     } catch (err) {
       setError(err instanceof Error ? err.message : '删除任务失败');
     } finally {
@@ -108,37 +109,12 @@ const TaskPage: React.FC = () => {
         level: parentTaskId ? 1 : 0,
         order: tasks.filter(t => t.parentId === parentTaskId).length
       });
-
-      if (parentTaskId) {
-        const updateTaskTree = (taskList: Task[]): Task[] => {
-          return taskList.map(task => {
-            if (task.id === parentTaskId) {
-              return {
-                ...task,
-                children: [...(task.children || []), newTask]
-              };
-            }
-            if (task.children) {
-              return {
-                ...task,
-                children: updateTaskTree(task.children)
-              };
-            }
-            return task;
-          });
-        };
-
-        const updatedTasks = updateTaskTree(tasks);
-        setTasks(updatedTasks);
-      } else {
-        addTask(newTask);
-      }
-
-      setIsCreateDialogOpen(false);
-      setParentTaskId(undefined);
+      addTask(newTask);
     } catch (err) {
       setError(err instanceof Error ? err.message : '创建任务失败');
     } finally {
+      setIsCreateDialogOpen(false);
+      setParentTaskId(undefined);
       setLoading(false);
     }
   };

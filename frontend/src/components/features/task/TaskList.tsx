@@ -8,7 +8,7 @@ import { Task, TaskStatus } from '@/types/task';
 interface TaskListProps {
   tasks: Task[];
   onEditTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
+  onDeleteTask: (taskPath: string[]) => void;
   onToggleStatus: (taskId: string) => void;
   onAddSubtask: (parentId: string) => void;
 }

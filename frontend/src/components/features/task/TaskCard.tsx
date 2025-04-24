@@ -25,7 +25,7 @@ import { Task, TaskStatus, TaskPriority } from '@/types/task';
 export interface TaskProps {
   task: Task;
   onEdit?: (task: Task) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (taskPath: string[]) => void;
   onStatusChange?: (id: string) => void;
   onAddSubtask?: (parentId: string) => void;
   level?: number;
@@ -101,7 +101,7 @@ const TaskCard: React.FC<TaskProps> = ({
             <IconButton
               size="small"
               onClick={() => {
-                onDelete?.(task.id);
+                onDelete?.(task.path);
               }}
             >
               <DeleteIcon />

@@ -22,8 +22,41 @@ interface TaskActions {
   setFilters: (filters: Partial<TaskState['filters']>) => void;
   addTask: (task: Task) => void;
   updateTask: (task: Task) => void;
-  deleteTask: (id: string) => void;
+  deleteTask: (path: string[]) => void;
 }
+
+// 递归处理任务树
+const processTaskTree = (
+  tasks: Task[],
+  path: string[],
+  processFn: (tasks: Task[]) => Task[]
+): Task[] => {
+  // 如果是根任务，
+  if (path.length === 1) {
+    return processFn(tasks);
+  }
+
+  return tasks.map(task => {
+    // 如果当前任务在path中
+    if (path.includes(task.id)) {
+      // 如果是目标任务的父任务
+      if (task.id === path[path.length - 2]) {
+        return {
+          ...task,
+          children: processFn(task.children || [])
+        };
+      }
+      // 如果还有子任务，继续递归
+      if (task.children?.length) {
+        return {
+          ...task,
+          children: processTaskTree(task.children, path, processFn)
+        };
+      }
+    }
+    return task;
+  });
+};
 
 const useTaskStore = create<TaskState & TaskActions>(set => ({
   // 状态
@@ -48,15 +81,19 @@ const useTaskStore = create<TaskState & TaskActions>(set => ({
     })),
   addTask: task =>
     set(state => ({
-      tasks: [...state.tasks, task]
+      tasks: processTaskTree(state.tasks, task.path, tasks => [...tasks, task])
     })),
   updateTask: task =>
     set(state => ({
-      tasks: state.tasks.map(t => (t.id === task.id ? task : t))
+      tasks: processTaskTree(state.tasks, task.path, tasks =>
+        tasks.map(t => (t.id === task.id ? task : t))
+      )
     })),
-  deleteTask: id =>
+  deleteTask: path =>
     set(state => ({
-      tasks: state.tasks.filter(t => t.id !== id)
+      tasks: processTaskTree(state.tasks, path, tasks =>
+        tasks.filter(t => t.id !== path[path.length - 1])
+      )
     }))
 }));
 
