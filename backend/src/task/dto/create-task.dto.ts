@@ -56,14 +56,4 @@ export class CreateTaskDto {
   @IsUUID()
   @IsOptional()
   parentId?: string;
-
-  @ApiProperty({ description: '任务层级', required: false, default: 0 })
-  @IsNumber()
-  @IsOptional()
-  level?: number;
-
-  @ApiProperty({ description: '同级任务排序', required: false, default: 0 })
-  @IsNumber()
-  @IsOptional()
-  order?: number;
 }

@@ -58,11 +58,6 @@ export class UpdateTaskDto {
   @IsOptional()
   parentId?: string;
 
-  @ApiProperty({ description: '任务层级', required: false })
-  @IsNumber()
-  @IsOptional()
-  level?: number;
-
   @ApiProperty({ description: '同级任务排序', required: false })
   @IsNumber()
   @IsOptional()

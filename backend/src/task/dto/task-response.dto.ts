@@ -40,9 +40,6 @@ export class TaskResponseDto {
   })
   children?: TaskResponseDto[];
 
-  @ApiProperty({ description: '任务层级', default: 0 })
-  level: number;
-
   @ApiProperty({ description: '同级任务排序', default: 0 })
   order: number;
 

@@ -43,14 +43,12 @@ export class TaskService {
           );
         }
 
-        if (parentTask.level >= 2) {
+        if (parentTask.path.length > 2) {
           throw new ValidationException('任务层级不能超过3层', {
-            currentLevel: parentTask.level,
+            currentLevel: parentTask.path.length,
             maxLevel: 2,
           });
         }
-
-        createTaskDto.level = (parentTask.level || 0) + 1;
       }
 
       const siblingTasks = await this.prisma.task.count({
@@ -62,7 +60,7 @@ export class TaskService {
           ...createTaskDto,
           status: createTaskDto.status || TaskStatus.TODO,
           priority: createTaskDto.priority || TaskPriority.MEDIUM,
-          order: createTaskDto.order || siblingTasks,
+          order: siblingTasks,
         },
         include: {
           children: true,
@@ -166,19 +164,13 @@ export class TaskService {
             throw new BusinessException('不能创建循环依赖关系');
           }
 
-          if (parentTask.level >= 2) {
+          if (parentTask.path.length > 2) {
             throw new ValidationException('任务层级不能超过3层', {
-              currentLevel: parentTask.level,
+              currentLevel: parentTask.path.length,
               maxLevel: 2,
             });
           }
-
-          updateTaskDto.level = (parentTask.level || 0) + 1;
-        } else {
-          updateTaskDto.level = 0;
         }
-
-        await this.updateChildrenLevels(task, updateTaskDto.level || 0);
       }
 
       const updatedTask = await this.prisma.task.update({
@@ -249,26 +241,6 @@ export class TaskService {
     }
 
     return false;
-  }
-
-  private async updateChildrenLevels(
-    task: any,
-    parentLevel: number,
-  ): Promise<void> {
-    if (!task.children?.length) {
-      return;
-    }
-
-    const childLevel = parentLevel + 1;
-    await Promise.all(
-      task.children.map(async (child: any) => {
-        await this.prisma.task.update({
-          where: { id: child.id },
-          data: { level: childLevel },
-        });
-        await this.updateChildrenLevels(child, childLevel);
-      }),
-    );
   }
 
   async getTaskChildren(id: string): Promise<TaskResponseDto[]> {
