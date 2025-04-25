@@ -7,7 +7,7 @@ import TaskForm from './TaskForm';
 
 import { taskApi } from '@/services/api/taskApi';
 import useTaskStore from '@/store/taskStore';
-import { Task, TaskFormData, FilterFormData } from '@/types/task';
+import { Task, TaskFormData, FilterFormData, TaskStatus } from '@/types/task';
 
 const TaskPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -84,13 +84,9 @@ const TaskPage: React.FC = () => {
     }
   };
 
-  const handleToggleStatus = async (taskId: string) => {
+  const handleToggleStatus = async (taskId: string, newStatus: TaskStatus) => {
     try {
       setLoading(true);
-      const task = tasks.find(t => t.id === taskId);
-      if (!task) return;
-
-      const newStatus = task.status === 'completed' ? 'todo' : 'completed';
       const updatedTask = await taskApi.updateTask(taskId, { status: newStatus });
       updateTask(updatedTask);
     } catch (err) {
@@ -105,9 +101,7 @@ const TaskPage: React.FC = () => {
       setLoading(true);
       const newTask = await taskApi.createTask({
         ...formData,
-        parentId: parentTaskId,
-        level: parentTaskId ? 1 : 0,
-        order: tasks.filter(t => t.parentId === parentTaskId).length
+        parentId: parentTaskId
       });
       addTask(newTask);
     } catch (err) {

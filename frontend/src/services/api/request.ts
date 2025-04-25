@@ -54,6 +54,7 @@ declare module 'axios' {
     get<T = any>(url: string, config?: InternalAxiosRequestConfig): Promise<T>;
     post<T = any>(url: string, data?: any, config?: InternalAxiosRequestConfig): Promise<T>;
     put<T = any>(url: string, data?: any, config?: InternalAxiosRequestConfig): Promise<T>;
+    patch<T = any>(url: string, data?: any, config?: InternalAxiosRequestConfig): Promise<T>;
     delete<T = any>(url: string, config?: InternalAxiosRequestConfig): Promise<T>;
   }
 }

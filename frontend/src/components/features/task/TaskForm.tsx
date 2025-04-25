@@ -1,7 +1,6 @@
 import React from 'react';
 import { Stack } from '@mui/material';
 import { SubmitHandler } from 'react-hook-form';
-import * as z from 'zod';
 
 import { Task } from '@/types/task';
 import { BaseForm } from '@/components/common/forms';
@@ -12,20 +11,7 @@ import {
   DatePickerField,
   TagAutocomplete
 } from '@/components/common/form-controls';
-
-const taskSchema = z.object({
-  title: z.string().min(1, '标题不能为空'),
-  description: z.string().optional(),
-  status: z.enum(['todo', 'inProgress', 'completed']),
-  priority: z.enum(['low', 'medium', 'high']),
-  dueDate: z.date().optional(),
-  tags: z.array(z.string()).optional(),
-  parentId: z.string().optional(),
-  level: z.number(),
-  order: z.number()
-});
-
-type TaskFormData = z.infer<typeof taskSchema>;
+import { taskSchema, TaskFormData } from '@/types/task';
 
 interface TaskFormProps {
   initialData?: Partial<Task>;
@@ -49,9 +35,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     priority: initialData?.priority || 'medium',
     dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : undefined,
     tags: initialData?.tags || [],
-    parentId: initialData?.parentId,
-    level: initialData?.level || 0,
-    order: initialData?.order || 0
+    parentId: initialData?.parentId || undefined
   };
 
   return (

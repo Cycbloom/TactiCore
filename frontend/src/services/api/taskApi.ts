@@ -46,7 +46,7 @@ export const taskApi = {
 
   // 更新任务
   updateTask: (id: string, taskData: Partial<TaskFormData>) => {
-    return request.put<Task>(`/tasks/${id}`, taskData);
+    return request.patch<Task>(`/tasks/${id}`, taskData);
   },
 
   // 删除任务

@@ -26,7 +26,6 @@ export interface Task {
   updatedAt: Date;
   parentId?: string;
   children?: Task[];
-  level: number;
   order: number;
   path: string[];
 }
@@ -55,9 +54,7 @@ export const taskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']),
   dueDate: z.date().optional(),
   tags: z.array(z.string()).optional(),
-  parentId: z.string().optional(),
-  level: z.number().default(0),
-  order: z.number().default(0)
+  parentId: z.string().optional()
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;
