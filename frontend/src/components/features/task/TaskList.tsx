@@ -1,5 +1,6 @@
-import React from 'react';
-import { Stack } from '@mui/material';
+import React, { useRef } from 'react';
+import { Stack, Box } from '@mui/material';
+import { useDrop } from 'react-dnd';
 
 import TaskCard from './TaskCard';
 
@@ -11,6 +12,7 @@ interface TaskListProps {
   onDeleteTask: (taskPath: string[]) => void;
   onToggleStatus: (taskId: string, newStatus: TaskStatus) => void;
   onAddSubtask: (parentId: string) => void;
+  onMoveTask: (taskPath: string[], newTaskPath: string[]) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
@@ -18,10 +20,44 @@ const TaskList: React.FC<TaskListProps> = ({
   onEditTask,
   onDeleteTask,
   onToggleStatus,
-  onAddSubtask
+  onAddSubtask,
+  onMoveTask
 }) => {
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
+    accept: 'TASK',
+    drop: (item: { path: string[] }, monitor) => {
+      if (!monitor.isOver({ shallow: true })) {
+        return;
+      }
+      // 当拖拽到列表顶部时，移动到根目录
+      onMoveTask(item.path, []);
+    },
+    canDrop: (item: { path: string[] }) => {
+      // 如果已经是根任务，则不能放置
+      if (item.path.length === 0) return false;
+      return true;
+    },
+    collect: monitor => ({
+      isOver: monitor.isOver({ shallow: true }),
+      canDrop: monitor.canDrop()
+    })
+  }));
+
+  drop(dropRef);
+
   return (
     <Stack spacing={2}>
+      <Box
+        ref={dropRef}
+        sx={{
+          height: '4px',
+          backgroundColor: isOver && canDrop ? 'primary.main' : 'transparent',
+          borderRadius: '2px',
+          transition: 'background-color 0.2s'
+        }}
+      />
       {tasks.map(task => (
         <TaskCard
           key={task.id}
@@ -32,6 +68,7 @@ const TaskList: React.FC<TaskListProps> = ({
           onDelete={onDeleteTask}
           onStatusChange={onToggleStatus}
           onAddSubtask={onAddSubtask}
+          onMoveTask={onMoveTask}
         />
       ))}
     </Stack>

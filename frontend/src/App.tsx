@@ -2,6 +2,8 @@ import React from 'react';
 import { ThemeProvider, CssBaseline, Box } from '@mui/material';
 import { useState, useMemo } from 'react';
 import { RouterProvider, BrowserRouter } from 'react-router-dom';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { ErrorProvider } from './utils/error-handler';
 
@@ -21,10 +23,12 @@ const App: React.FC = () => {
       <ErrorProvider>
         <AuthProvider>
           <DataProvider>
-            <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
-              <ThemeToggle onToggle={() => setIsDarkMode(!isDarkMode)} />
-            </Box>
-            <RouterProvider router={router} />
+            <DndProvider backend={HTML5Backend}>
+              <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
+                <ThemeToggle onToggle={() => setIsDarkMode(!isDarkMode)} />
+              </Box>
+              <RouterProvider router={router} />
+            </DndProvider>
           </DataProvider>
         </AuthProvider>
       </ErrorProvider>

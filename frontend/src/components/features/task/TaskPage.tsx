@@ -9,6 +9,8 @@ import { taskApi } from '@/services/api/taskApi';
 import useTaskStore from '@/store/taskStore';
 import { Task, TaskFormData, FilterFormData, TaskStatus } from '@/types/task';
 
+const ROOT_TASK_ID = '00000000-0000-0000-0000-000000000000';
+
 const TaskPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -101,7 +103,7 @@ const TaskPage: React.FC = () => {
       setLoading(true);
       const newTask = await taskApi.createTask({
         ...formData,
-        parentId: parentTaskId
+        parentId: parentTaskId || ROOT_TASK_ID
       });
       addTask(newTask);
     } catch (err) {
@@ -109,6 +111,40 @@ const TaskPage: React.FC = () => {
     } finally {
       setIsCreateDialogOpen(false);
       setParentTaskId(undefined);
+      setLoading(false);
+    }
+  };
+
+  const handleMoveTask = async (taskPath: string[], newTaskPath: string[]) => {
+    try {
+      setLoading(true);
+      const taskId = taskPath[taskPath.length - 1];
+      const newTaskId = newTaskPath.length > 0 ? newTaskPath[newTaskPath.length - 1] : ROOT_TASK_ID;
+
+      // 检查是否尝试将任务移动到自身
+      if (taskId === newTaskId) {
+        setError('不能将任务移动到自身');
+        return;
+      }
+
+      // 检查是否尝试将任务移动到其子任务
+      if (newTaskPath.includes(taskId)) {
+        setError('不能将任务移动到其子任务中');
+        return;
+      }
+
+      // 检查新的任务层级是否超过四层
+      if (newTaskPath.length > 3) {
+        setError('任务层级不能超过四层');
+        return;
+      }
+
+      const updatedTask = await taskApi.updateTask(taskId, { parentId: newTaskId });
+      deleteTask(taskPath);
+      addTask(updatedTask);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '移动任务失败');
+    } finally {
       setLoading(false);
     }
   };
@@ -129,7 +165,7 @@ const TaskPage: React.FC = () => {
           filters={filters as FilterFormData}
           onFilterChange={handleFilterChange}
           onCreateClick={() => {
-            setParentTaskId(undefined);
+            setParentTaskId(ROOT_TASK_ID);
             setIsCreateDialogOpen(true);
           }}
         />
@@ -156,11 +192,12 @@ const TaskPage: React.FC = () => {
             </Box>
           )}
           <TaskList
-            tasks={tasks.filter(task => !task.parentId)}
+            tasks={tasks.filter(task => task.parentId === ROOT_TASK_ID)}
             onEditTask={handleEditTask}
             onDeleteTask={handleDeleteTask}
             onToggleStatus={handleToggleStatus}
             onAddSubtask={handleAddSubtask}
+            onMoveTask={handleMoveTask}
           />
         </Box>
 

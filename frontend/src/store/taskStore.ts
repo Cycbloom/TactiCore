@@ -25,14 +25,16 @@ interface TaskActions {
   deleteTask: (path: string[]) => void;
 }
 
+const ROOT_TASK_ID = '00000000-0000-0000-0000-000000000000';
+
 // 递归处理任务树
 const processTaskTree = (
   tasks: Task[],
   path: string[],
   processFn: (tasks: Task[]) => Task[]
 ): Task[] => {
-  // 如果是根任务，
-  if (path.length === 1) {
+  // 如果是根任务，直接处理 [ROOT_TASK_ID, ..., task.id] 长度至少为2
+  if (path.length === 2) {
     return processFn(tasks);
   }
 
