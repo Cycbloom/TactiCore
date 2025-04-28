@@ -1,15 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Dialog,
-  CircularProgress,
-  ToggleButton,
-  ToggleButtonGroup
-} from '@mui/material';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import { Box, Container, Typography, Dialog, CircularProgress } from '@mui/material';
 
 import TaskHeader from './TaskHeader';
 import TaskList from './TaskList';
@@ -169,36 +159,27 @@ const TaskPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ my: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           任务管理
         </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <TaskHeader
-            filters={filters as FilterFormData}
-            onFilterChange={handleFilterChange}
-            onCreateClick={() => {
-              setParentTaskId(ROOT_TASK_ID);
-              setIsCreateDialogOpen(true);
-            }}
-          />
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={handleViewModeChange}
-            aria-label="视图模式"
-          >
-            <ToggleButton value="list" aria-label="列表视图">
-              <ViewListIcon />
-            </ToggleButton>
-            <ToggleButton value="mindmap" aria-label="思维导图视图">
-              <AccountTreeIcon />
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+        <TaskHeader
+          filters={filters as FilterFormData}
+          onFilterChange={handleFilterChange}
+          onCreateClick={() => {
+            setParentTaskId(ROOT_TASK_ID);
+            setIsCreateDialogOpen(true);
+          }}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
 
-        {error && <Typography color="error">{error}</Typography>}
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
+        )}
 
         <Box sx={{ position: 'relative' }}>
           {loading && (
