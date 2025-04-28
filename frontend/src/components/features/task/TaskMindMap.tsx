@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -11,10 +11,16 @@ import ReactFlow, {
   addEdge,
   OnConnect,
   EdgeChange,
-  NodeChange
+  NodeChange,
+  useReactFlow,
+  ReactFlowProvider
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Paper, Typography, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ContentCutIcon from '@mui/icons-material/ContentCut';
 
 import TaskNode from './TaskNode';
 
@@ -34,7 +40,7 @@ interface TaskMindMapProps {
   onMoveTask: (taskPath: string[], newTaskPath: string[]) => void;
 }
 
-const TaskMindMap: React.FC<TaskMindMapProps> = ({
+const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
   tasks,
   onEditTask,
   onDeleteTask,
@@ -44,6 +50,13 @@ const TaskMindMap: React.FC<TaskMindMapProps> = ({
 }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [contextMenu, setContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+    nodeId?: string;
+  } | null>(null);
+
+  const { getNode } = useReactFlow();
 
   // 递归处理任务及其子任务
   const processTask = useCallback(
@@ -175,6 +188,52 @@ const TaskMindMap: React.FC<TaskMindMapProps> = ({
     [nodes, onMoveTask]
   );
 
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      const target = event.target as HTMLElement;
+      const nodeId = target.closest('.react-flow__node')?.getAttribute('data-id');
+      const node = nodeId ? getNode(nodeId) : null;
+      setContextMenu({
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+        nodeId: node?.id
+      });
+    },
+    [getNode]
+  );
+
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const handleAddSubtaskFromContext = useCallback(() => {
+    if (contextMenu?.nodeId) {
+      onAddSubtask(contextMenu.nodeId);
+    }
+    handleCloseContextMenu();
+  }, [contextMenu, onAddSubtask, handleCloseContextMenu]);
+
+  const handleEditTaskFromContext = useCallback(() => {
+    if (contextMenu?.nodeId) {
+      const node = nodes.find(n => n.id === contextMenu.nodeId);
+      if (node) {
+        onEditTask(node.data.task);
+      }
+    }
+    handleCloseContextMenu();
+  }, [contextMenu, nodes, onEditTask, handleCloseContextMenu]);
+
+  const handleDeleteTaskFromContext = useCallback(() => {
+    if (contextMenu?.nodeId) {
+      const node = nodes.find(n => n.id === contextMenu.nodeId);
+      if (node) {
+        onDeleteTask(node.data.task.path);
+      }
+    }
+    handleCloseContextMenu();
+  }, [contextMenu, nodes, onDeleteTask, handleCloseContextMenu]);
+
   return (
     <Box sx={{ height: 'calc(100vh - 200px)', width: '100%' }}>
       <Paper elevation={3} sx={{ height: '100%', width: '100%' }}>
@@ -189,12 +248,48 @@ const TaskMindMap: React.FC<TaskMindMapProps> = ({
           fitView
           fitViewOptions={{ padding: 0.2 }}
           connectOnClick={true}
+          onContextMenu={handleContextMenu}
         >
           <Background />
           <Controls />
         </ReactFlow>
+        <Menu
+          open={contextMenu !== null}
+          onClose={handleCloseContextMenu}
+          anchorReference="anchorPosition"
+          anchorPosition={
+            contextMenu !== null ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined
+          }
+        >
+          <MenuItem onClick={handleAddSubtaskFromContext}>
+            <ListItemIcon>
+              <AddIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>添加子任务</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleEditTaskFromContext}>
+            <ListItemIcon>
+              <EditIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>编辑任务</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleDeleteTaskFromContext}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>删除任务</ListItemText>
+          </MenuItem>
+        </Menu>
       </Paper>
     </Box>
+  );
+};
+
+const TaskMindMap: React.FC<TaskMindMapProps> = props => {
+  return (
+    <ReactFlowProvider>
+      <TaskMindMapContent {...props} />
+    </ReactFlowProvider>
   );
 };
 
