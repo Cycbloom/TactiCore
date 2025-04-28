@@ -9,7 +9,9 @@ import ReactFlow, {
   Position,
   Connection,
   addEdge,
-  OnConnect
+  OnConnect,
+  EdgeChange,
+  NodeChange
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Box, Paper, Typography } from '@mui/material';
@@ -159,6 +161,26 @@ const TaskMindMap: React.FC<TaskMindMapProps> = ({
     [nodes, onMoveTask]
   );
 
+  // 处理边的删除
+  const onEdgesDelete = useCallback(
+    (edgesToDelete: Edge[]) => {
+      edgesToDelete.forEach(edge => {
+        // 获取要移动的节点（target）和新的父节点（source）
+        const movingNode = nodes.find(node => node.id === edge.target);
+        const parentNode = nodes.find(node => node.id === edge.source);
+
+        if (!movingNode || !parentNode) return;
+
+        // 获取要移动的任务的路径
+        const movingPath = movingNode.data.task.path;
+
+        // 将任务移动到根节点
+        onMoveTask(movingPath, [ROOT_TASK_ID]);
+      });
+    },
+    [nodes, onMoveTask]
+  );
+
   return (
     <Box sx={{ height: 'calc(100vh - 200px)', width: '100%' }}>
       <Paper elevation={3} sx={{ height: '100%', width: '100%' }}>
@@ -168,6 +190,7 @@ const TaskMindMap: React.FC<TaskMindMapProps> = ({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onEdgesDelete={onEdgesDelete}
           nodeTypes={nodeTypes}
           fitView
           fitViewOptions={{ padding: 0.2 }}
