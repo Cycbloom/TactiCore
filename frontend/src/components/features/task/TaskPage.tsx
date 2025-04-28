@@ -1,20 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Container, Typography, Dialog, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Dialog,
+  CircularProgress,
+  ToggleButton,
+  ToggleButtonGroup
+} from '@mui/material';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 import TaskHeader from './TaskHeader';
 import TaskList from './TaskList';
 import TaskForm from './TaskForm';
+import TaskMindMap from './TaskMindMap';
 
 import { taskApi } from '@/services/api/taskApi';
 import useTaskStore from '@/store/taskStore';
-import { Task, TaskFormData, FilterFormData, TaskStatus } from '@/types/task';
-
-const ROOT_TASK_ID = '00000000-0000-0000-0000-000000000000';
+import { Task, TaskFormData, FilterFormData, TaskStatus, ROOT_TASK_ID } from '@/types/task';
 
 const TaskPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [parentTaskId, setParentTaskId] = useState<string | undefined>();
+  const [viewMode, setViewMode] = useState<'list' | 'mindmap'>('list');
   const {
     tasks,
     loading,
@@ -154,6 +164,15 @@ const TaskPage: React.FC = () => {
     setIsCreateDialogOpen(true);
   };
 
+  const handleViewModeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newViewMode: 'list' | 'mindmap'
+  ) => {
+    if (newViewMode !== null) {
+      setViewMode(newViewMode);
+    }
+  };
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
@@ -161,14 +180,29 @@ const TaskPage: React.FC = () => {
           任务管理
         </Typography>
 
-        <TaskHeader
-          filters={filters as FilterFormData}
-          onFilterChange={handleFilterChange}
-          onCreateClick={() => {
-            setParentTaskId(ROOT_TASK_ID);
-            setIsCreateDialogOpen(true);
-          }}
-        />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <TaskHeader
+            filters={filters as FilterFormData}
+            onFilterChange={handleFilterChange}
+            onCreateClick={() => {
+              setParentTaskId(ROOT_TASK_ID);
+              setIsCreateDialogOpen(true);
+            }}
+          />
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={handleViewModeChange}
+            aria-label="视图模式"
+          >
+            <ToggleButton value="list" aria-label="列表视图">
+              <ViewListIcon />
+            </ToggleButton>
+            <ToggleButton value="mindmap" aria-label="思维导图视图">
+              <AccountTreeIcon />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
 
         {error && <Typography color="error">{error}</Typography>}
 
@@ -191,14 +225,25 @@ const TaskPage: React.FC = () => {
               <CircularProgress />
             </Box>
           )}
-          <TaskList
-            tasks={tasks.filter(task => task.parentId === ROOT_TASK_ID)}
-            onEditTask={handleEditTask}
-            onDeleteTask={handleDeleteTask}
-            onToggleStatus={handleToggleStatus}
-            onAddSubtask={handleAddSubtask}
-            onMoveTask={handleMoveTask}
-          />
+          {viewMode === 'list' ? (
+            <TaskList
+              tasks={tasks.filter(task => task.parentId === ROOT_TASK_ID)}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              onToggleStatus={handleToggleStatus}
+              onAddSubtask={handleAddSubtask}
+              onMoveTask={handleMoveTask}
+            />
+          ) : (
+            <TaskMindMap
+              tasks={tasks}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              onToggleStatus={handleToggleStatus}
+              onAddSubtask={handleAddSubtask}
+              onMoveTask={handleMoveTask}
+            />
+          )}
         </Box>
 
         <Dialog

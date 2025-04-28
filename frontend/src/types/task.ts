@@ -14,6 +14,8 @@ export enum TaskPriority {
   HIGH = 'high'
 }
 
+export const ROOT_TASK_ID = '00000000-0000-0000-0000-000000000000';
+
 export interface Task {
   id: string;
   title: string;

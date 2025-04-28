@@ -23,6 +23,7 @@ interface TaskActions {
   addTask: (task: Task) => void;
   updateTask: (task: Task) => void;
   deleteTask: (path: string[]) => void;
+  getTaskByPath: (path: string[]) => Task | null;
 }
 
 const ROOT_TASK_ID = '00000000-0000-0000-0000-000000000000';
@@ -60,7 +61,7 @@ const processTaskTree = (
   });
 };
 
-const useTaskStore = create<TaskState & TaskActions>(set => ({
+const useTaskStore = create<TaskState & TaskActions>((set, get) => ({
   // 状态
   tasks: [],
   loading: false,
@@ -96,7 +97,18 @@ const useTaskStore = create<TaskState & TaskActions>(set => ({
       tasks: processTaskTree(state.tasks, path, tasks =>
         tasks.filter(t => t.id !== path[path.length - 1])
       )
-    }))
+    })),
+  getTaskByPath: path => {
+    let currentTasks = get().tasks;
+    // root task id is path[0], so we start from 1
+    for (let i = 1; i < path.length - 1; i++) {
+      const task = currentTasks.find(t => t.id === path[i]);
+      if (task) {
+        currentTasks = task.children || [];
+      }
+    }
+    return currentTasks.find(t => t.id === path[path.length - 1]) || null;
+  }
 }));
 
 export default useTaskStore;
