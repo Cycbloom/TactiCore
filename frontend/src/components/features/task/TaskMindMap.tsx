@@ -52,7 +52,7 @@ interface TaskMindMapProps {
   tasks: Task[];
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskPath: string[]) => void;
-  onToggleStatus: (taskId: string, newStatus: TaskStatus) => void;
+  onToggleStatus: (taskPath: string[], newStatus: TaskStatus) => void;
   onAddSubtask: (parentId: string) => void;
   onMoveTask: (taskPath: string[], newTaskPath: string[]) => void;
 }
@@ -101,7 +101,7 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
           task,
           onEdit: () => onEditTask(task),
           onDelete: () => onDeleteTask(task.path),
-          onToggleStatus: (status: TaskStatus) => onToggleStatus(task.id, status),
+          onToggleStatus: (status: TaskStatus) => onToggleStatus(task.path, status),
           onAddSubtask: () => onAddSubtask(task.id),
           onToggleCollapse: () => {
             setCollapsedNodes(prev => {

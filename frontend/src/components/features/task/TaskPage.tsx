@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Container, Typography, Dialog, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Dialog,
+  CircularProgress,
+  Snackbar,
+  Alert
+} from '@mui/material';
 
 import TaskHeader from './TaskHeader';
 import TaskList from './TaskList';
@@ -8,6 +16,7 @@ import TaskMindMap from './TaskMindMap';
 
 import { taskApi } from '@/services/api/taskApi';
 import useTaskStore from '@/store/taskStore';
+import { useHistoryStore, toHistoryTaskData } from '@/store/historyStore';
 import { Task, TaskFormData, FilterFormData, TaskStatus, ROOT_TASK_ID } from '@/types/task';
 
 const TaskPage: React.FC = () => {
@@ -15,6 +24,7 @@ const TaskPage: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [parentTaskId, setParentTaskId] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<'list' | 'mindmap'>('list');
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const {
     tasks,
     loading,
@@ -26,8 +36,10 @@ const TaskPage: React.FC = () => {
     setFilters,
     addTask,
     updateTask,
-    deleteTask
+    deleteTask,
+    getTaskByPath
   } = useTaskStore();
+  const { addOperation, undo, redo } = useHistoryStore();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -64,6 +76,11 @@ const TaskPage: React.FC = () => {
         setLoading(true);
         const updatedTask = await taskApi.updateTask(editingTask.id, formData);
         updateTask(updatedTask);
+        addOperation({
+          type: 'update',
+          task: toHistoryTaskData(updatedTask),
+          oldTask: toHistoryTaskData(editingTask)
+        });
         handleCloseEditDialog();
       } catch (err) {
         setError(err instanceof Error ? err.message : '更新任务失败');
@@ -77,8 +94,15 @@ const TaskPage: React.FC = () => {
     try {
       setLoading(true);
       const taskId = taskPath[taskPath.length - 1];
+      const taskToDelete = getTaskByPath(taskPath);
+      if (!taskToDelete) return;
+
       await taskApi.deleteTask(taskId);
       deleteTask(taskPath);
+      addOperation({
+        type: 'delete',
+        task: toHistoryTaskData(taskToDelete)
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : '删除任务失败');
     } finally {
@@ -86,11 +110,20 @@ const TaskPage: React.FC = () => {
     }
   };
 
-  const handleToggleStatus = async (taskId: string, newStatus: TaskStatus) => {
+  const handleToggleStatus = async (taskPath: string[], newStatus: TaskStatus) => {
     try {
       setLoading(true);
+      const taskId = taskPath[taskPath.length - 1];
+      const taskToUpdate = getTaskByPath(taskPath);
+      if (!taskToUpdate) return;
+
       const updatedTask = await taskApi.updateTask(taskId, { status: newStatus });
       updateTask(updatedTask);
+      addOperation({
+        type: 'update',
+        task: toHistoryTaskData(updatedTask),
+        oldTask: toHistoryTaskData(taskToUpdate)
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新任务状态失败');
     } finally {
@@ -106,6 +139,10 @@ const TaskPage: React.FC = () => {
         parentId: parentTaskId || ROOT_TASK_ID
       });
       addTask(newTask);
+      addOperation({
+        type: 'create',
+        task: toHistoryTaskData(newTask)
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : '创建任务失败');
     } finally {
@@ -120,6 +157,8 @@ const TaskPage: React.FC = () => {
       setLoading(true);
       const taskId = taskPath[taskPath.length - 1];
       const newTaskId = newTaskPath.length > 0 ? newTaskPath[newTaskPath.length - 1] : ROOT_TASK_ID;
+      const taskToMove = getTaskByPath(taskPath);
+      if (!taskToMove) return;
 
       // 检查是否尝试将任务移动到自身
       if (taskId === newTaskId) {
@@ -136,6 +175,11 @@ const TaskPage: React.FC = () => {
       const updatedTask = await taskApi.updateTask(taskId, { parentId: newTaskId });
       deleteTask(taskPath);
       addTask(updatedTask);
+      addOperation({
+        type: 'move',
+        task: toHistoryTaskData(updatedTask),
+        oldTask: toHistoryTaskData(taskToMove)
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : '移动任务失败');
     } finally {
@@ -148,12 +192,31 @@ const TaskPage: React.FC = () => {
     setIsCreateDialogOpen(true);
   };
 
-  const handleViewModeChange = (
-    _event: React.MouseEvent<HTMLElement>,
-    newViewMode: 'list' | 'mindmap'
-  ) => {
-    if (newViewMode !== null) {
-      setViewMode(newViewMode);
+  const handleUndo = async () => {
+    try {
+      setLoading(true);
+      await undo();
+      // 重新获取最新数据
+      const data = await taskApi.getTasks(filters as FilterFormData);
+      setTasks(data);
+    } catch (err) {
+      setHistoryError(err instanceof Error ? err.message : '撤销操作失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRedo = async () => {
+    try {
+      setLoading(true);
+      await redo();
+      // 重新获取最新数据
+      const data = await taskApi.getTasks(filters as FilterFormData);
+      setTasks(data);
+    } catch (err) {
+      setHistoryError(err instanceof Error ? err.message : '重做操作失败');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -173,6 +236,8 @@ const TaskPage: React.FC = () => {
           }}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
         />
 
         {error && (
@@ -250,9 +315,21 @@ const TaskPage: React.FC = () => {
               initialData={editingTask || undefined}
               onSubmit={handleSubmitEdit}
               onCancel={handleCloseEditDialog}
+              formTitle="编辑任务"
+              submitText="保存"
             />
           </Box>
         </Dialog>
+
+        <Snackbar
+          open={!!historyError}
+          autoHideDuration={6000}
+          onClose={() => setHistoryError(null)}
+        >
+          <Alert onClose={() => setHistoryError(null)} severity="error" sx={{ width: '100%' }}>
+            {historyError}
+          </Alert>
+        </Snackbar>
       </Box>
     </Container>
   );

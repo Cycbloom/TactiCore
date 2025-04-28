@@ -16,10 +16,13 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import UndoIcon from '@mui/icons-material/Undo';
+import RedoIcon from '@mui/icons-material/Redo';
 
 import TaskFilter from './TaskFilter';
 
 import { FilterFormData } from '@/types/task';
+import { useHistoryStore } from '@/store/historyStore';
 
 interface TaskHeaderProps {
   filters: FilterFormData;
@@ -27,6 +30,8 @@ interface TaskHeaderProps {
   onCreateClick: () => void;
   viewMode: 'list' | 'mindmap';
   onViewModeChange: (viewMode: 'list' | 'mindmap') => void;
+  onUndo: () => void;
+  onRedo: () => void;
 }
 
 const TaskHeader: React.FC<TaskHeaderProps> = ({
@@ -34,9 +39,12 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
   onFilterChange,
   onCreateClick,
   viewMode,
-  onViewModeChange
+  onViewModeChange,
+  onUndo,
+  onRedo
 }) => {
   const [expanded, setExpanded] = useState(true);
+  const { canUndo, canRedo } = useHistoryStore();
 
   const handleViewModeChange = (
     _event: React.MouseEvent<HTMLElement>,
@@ -70,6 +78,42 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
             </Typography>
           </Box>
           <Stack direction="row" spacing={2} alignItems="center">
+            <Tooltip title="撤销">
+              <span>
+                <IconButton
+                  onClick={onUndo}
+                  disabled={!canUndo}
+                  size="small"
+                  sx={{
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  <UndoIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="重做">
+              <span>
+                <IconButton
+                  onClick={onRedo}
+                  disabled={!canRedo}
+                  size="small"
+                  sx={{
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    '&:disabled': {
+                      opacity: 0.5
+                    }
+                  }}
+                >
+                  <RedoIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
             <ToggleButtonGroup
               value={viewMode}
               exclusive

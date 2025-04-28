@@ -28,7 +28,7 @@ export interface TaskProps {
   task: Task;
   onEdit?: (task: Task) => void;
   onDelete?: (taskPath: string[]) => void;
-  onStatusChange?: (id: string, newStatus: TaskStatus) => void;
+  onStatusChange?: (taskPath: string[], newStatus: TaskStatus) => void;
   onAddSubtask?: (parentId: string) => void;
   onMoveTask?: (taskPath: string[], newTaskPath: string[]) => void;
   level?: number;
@@ -165,7 +165,7 @@ const TaskCard: React.FC<TaskProps> = ({
               size="small"
               onClick={() => {
                 const newStatus = task.status === 'completed' ? 'todo' : 'completed';
-                onStatusChange?.(task.id, newStatus as TaskStatus);
+                onStatusChange?.(task.path, newStatus as TaskStatus);
               }}
             >
               <CheckCircleIcon />

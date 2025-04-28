@@ -10,7 +10,7 @@ interface TaskListProps {
   tasks: Task[];
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskPath: string[]) => void;
-  onToggleStatus: (taskId: string, newStatus: TaskStatus) => void;
+  onToggleStatus: (taskPath: string[], newStatus: TaskStatus) => void;
   onAddSubtask: (parentId: string) => void;
   onMoveTask: (taskPath: string[], newTaskPath: string[]) => void;
 }
