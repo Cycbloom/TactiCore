@@ -67,6 +67,7 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
 }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
   const [contextMenu, setContextMenu] = useState<{
     mouseX: number;
     mouseY: number;
@@ -88,6 +89,10 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
       const nodes: Node[] = [];
       const edges: Edge[] = [];
 
+      // 检查当前节点是否被折叠
+      const isCollapsed = collapsedNodes.has(task.id);
+      const hasChildren = task.children && task.children.length > 0;
+
       // 创建当前任务节点
       nodes.push({
         id: task.id,
@@ -98,6 +103,19 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
           onDelete: () => onDeleteTask(task.path),
           onToggleStatus: (status: TaskStatus) => onToggleStatus(task.id, status),
           onAddSubtask: () => onAddSubtask(task.id),
+          onToggleCollapse: () => {
+            setCollapsedNodes(prev => {
+              const newSet = new Set(prev);
+              if (newSet.has(task.id)) {
+                newSet.delete(task.id);
+              } else {
+                newSet.add(task.id);
+              }
+              return newSet;
+            });
+          },
+          isCollapsed,
+          hasChildren,
           level
         },
         position: {
@@ -122,8 +140,8 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
         });
       }
 
-      // 递归处理子任务
-      if (task.children && task.children.length > 0) {
+      // 如果节点没有被折叠，递归处理子任务
+      if (!isCollapsed && task.children && task.children.length > 0) {
         task.children.forEach((childTask, childIndex) => {
           const { nodes: childNodes, edges: childEdges } = processTask(
             childTask,
@@ -137,7 +155,7 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
 
       return { nodes, edges };
     },
-    [onEditTask, onDeleteTask, onToggleStatus, onAddSubtask]
+    [onEditTask, onDeleteTask, onToggleStatus, onAddSubtask, collapsedNodes]
   );
 
   // 将任务数据转换为节点和边

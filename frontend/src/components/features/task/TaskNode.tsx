@@ -14,6 +14,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import FlagIcon from '@mui/icons-material/Flag';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 import { Task, TaskStatus, TaskPriority } from '@/types/task';
 
@@ -25,12 +27,26 @@ interface TaskNodeProps {
     onDelete: () => void;
     onToggleStatus: (status: TaskStatus) => void;
     onAddSubtask: () => void;
+    onToggleCollapse: () => void;
+    isCollapsed: boolean;
+    hasChildren: boolean;
     level: number;
   };
 }
 
 const TaskNode: React.FC<TaskNodeProps> = ({ data }) => {
-  const { label, task, onEdit, onDelete, onToggleStatus, onAddSubtask, level } = data;
+  const {
+    label,
+    task,
+    onEdit,
+    onDelete,
+    onToggleStatus,
+    onAddSubtask,
+    onToggleCollapse,
+    isCollapsed,
+    hasChildren,
+    level
+  } = data;
 
   // 状态颜色映射
   const statusColors: Record<TaskStatus, string> = {
@@ -97,6 +113,25 @@ const TaskNode: React.FC<TaskNodeProps> = ({ data }) => {
             {label}
           </Typography>
           <Box>
+            {hasChildren && (
+              <Tooltip title={isCollapsed ? '展开' : '折叠'}>
+                <IconButton
+                  size="small"
+                  onClick={onToggleCollapse}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                    }
+                  }}
+                >
+                  {isCollapsed ? (
+                    <ExpandMoreIcon fontSize="small" />
+                  ) : (
+                    <ExpandLessIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </Tooltip>
+            )}
             <Tooltip title="添加子任务">
               <span>
                 <IconButton
