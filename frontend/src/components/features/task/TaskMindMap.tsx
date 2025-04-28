@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -13,14 +13,31 @@ import ReactFlow, {
   EdgeChange,
   NodeChange,
   useReactFlow,
-  ReactFlowProvider
+  ReactFlowProvider,
+  Panel,
+  MiniMap
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Box, Paper, Typography, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import {
+  Box,
+  Paper,
+  Typography,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  TextField,
+  IconButton,
+  Tooltip
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ContentCutIcon from '@mui/icons-material/ContentCut';
+import SearchIcon from '@mui/icons-material/Search';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 import TaskNode from './TaskNode';
 
@@ -55,8 +72,15 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
     mouseY: number;
     nodeId?: string;
   } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const nodesRef = useRef(nodes);
 
-  const { getNode } = useReactFlow();
+  const { getNode, zoomIn, zoomOut, fitView } = useReactFlow();
+
+  // 更新ref
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
 
   // 递归处理任务及其子任务
   const processTask = useCallback(
@@ -77,8 +101,8 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
           level
         },
         position: {
-          x: level * 300,
-          y: index * 150
+          x: 0,
+          y: 0
         },
         type: 'taskNode',
         sourcePosition: Position.Right,
@@ -168,6 +192,36 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
     [nodes, onMoveTask]
   );
 
+  // 自动布局
+  const handleAutoLayout = useCallback(() => {
+    const newNodes = nodes.map((node, index) => {
+      const level = node.data.level;
+      const siblings = nodes.filter(n => n.data.level === level);
+      const siblingIndex = siblings.findIndex(n => n.id === node.id);
+      const totalSiblings = siblings.length;
+
+      return {
+        ...node,
+        position: {
+          x: level * 300,
+          y: (siblingIndex - (totalSiblings - 1) / 2) * 150
+        }
+      };
+    });
+    setNodes(newNodes);
+    fitView();
+  }, [nodes, setNodes, fitView]);
+
+  // 当节点数据变化时应用布局
+  React.useEffect(() => {
+    if (
+      nodesRef.current.length > 0 &&
+      !nodesRef.current.some(node => node.position.x !== 0 || node.position.y !== 0)
+    ) {
+      handleAutoLayout();
+    }
+  }, [nodes.length, handleAutoLayout]);
+
   // 处理边的删除
   const onEdgesDelete = useCallback(
     (edgesToDelete: Edge[]) => {
@@ -234,6 +288,20 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
     handleCloseContextMenu();
   }, [contextMenu, nodes, onDeleteTask, handleCloseContextMenu]);
 
+  // 搜索节点
+  const handleSearch = useCallback(
+    (query: string) => {
+      setSearchQuery(query);
+      const matchingNodes = nodes.filter(node =>
+        node.data.task.title.toLowerCase().includes(query.toLowerCase())
+      );
+      if (matchingNodes.length > 0) {
+        fitView({ nodes: matchingNodes, padding: 0.2 });
+      }
+    },
+    [nodes, fitView]
+  );
+
   return (
     <Box sx={{ height: 'calc(100vh - 200px)', width: '100%' }}>
       <Paper elevation={3} sx={{ height: '100%', width: '100%' }}>
@@ -249,9 +317,49 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
           fitViewOptions={{ padding: 0.2 }}
           connectOnClick={true}
           onContextMenu={handleContextMenu}
+          minZoom={0.1}
+          maxZoom={2}
+          defaultEdgeOptions={{
+            type: 'smoothstep',
+            animated: true,
+            style: { stroke: '#b1b1b7' }
+          }}
         >
           <Background />
-          <Controls />
+          <MiniMap />
+          <Panel position="top-left">
+            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+              <TextField
+                size="small"
+                placeholder="搜索任务..."
+                value={searchQuery}
+                onChange={e => handleSearch(e.target.value)}
+                InputProps={{
+                  startAdornment: <SearchIcon sx={{ mr: 1, color: 'action.active' }} />
+                }}
+              />
+              <Tooltip title="自动布局">
+                <IconButton onClick={handleAutoLayout}>
+                  <AccountTreeIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="放大">
+                <IconButton onClick={() => zoomIn()}>
+                  <ZoomInIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="缩小">
+                <IconButton onClick={() => zoomOut()}>
+                  <ZoomOutIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="适应视图">
+                <IconButton onClick={() => fitView()}>
+                  <CenterFocusStrongIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Panel>
         </ReactFlow>
         <Menu
           open={contextMenu !== null}
