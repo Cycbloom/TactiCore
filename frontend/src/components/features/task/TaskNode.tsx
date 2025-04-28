@@ -1,11 +1,21 @@
 import React from 'react';
 import { Handle, Position } from 'reactflow';
-import { Card, CardContent, Typography, Box, IconButton, Chip, Tooltip } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  IconButton,
+  Chip,
+  Tooltip,
+  Stack
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import FlagIcon from '@mui/icons-material/Flag';
 
-import { Task, TaskStatus } from '@/types/task';
+import { Task, TaskStatus, TaskPriority } from '@/types/task';
 
 interface TaskNodeProps {
   data: {
@@ -30,14 +40,50 @@ const TaskNode: React.FC<TaskNodeProps> = ({ data }) => {
     // [TaskStatus.BLOCKED]: '#f44336'
   };
 
+  // 优先级颜色映射
+  const priorityColors: Record<TaskPriority, string> = {
+    [TaskPriority.HIGH]: '#f44336',
+    [TaskPriority.MEDIUM]: '#ff9800',
+    [TaskPriority.LOW]: '#4caf50'
+  };
+
+  // 获取节点背景色
+  const getNodeBackgroundColor = () => {
+    switch (task.status) {
+      case TaskStatus.TODO:
+        return 'rgba(255, 152, 0, 0.1)';
+      case TaskStatus.IN_PROGRESS:
+        return 'rgba(33, 150, 243, 0.1)';
+      case TaskStatus.COMPLETED:
+        return 'rgba(76, 175, 80, 0.1)';
+      default:
+        return 'background.paper';
+    }
+  };
+
   return (
     <Card
       sx={{
         minWidth: 200,
         maxWidth: 300,
         boxShadow: 2,
+        backgroundColor: getNodeBackgroundColor(),
+        border: '1px solid',
+        borderColor: statusColors[task.status],
+        position: 'relative',
         '&:hover': {
           boxShadow: 4
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 4,
+          height: '100%',
+          backgroundColor: priorityColors[task.priority],
+          borderTopLeftRadius: 4,
+          borderBottomLeftRadius: 4
         }
       }}
     >
@@ -79,7 +125,7 @@ const TaskNode: React.FC<TaskNodeProps> = ({ data }) => {
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
           <Chip
             label={task.status}
             size="small"
@@ -89,25 +135,31 @@ const TaskNode: React.FC<TaskNodeProps> = ({ data }) => {
               width: 'fit-content'
             }}
           />
+          <Tooltip title={`优先级: ${task.priority}`}>
+            <Chip
+              icon={<FlagIcon />}
+              label={task.priority}
+              size="small"
+              sx={{
+                backgroundColor: priorityColors[task.priority],
+                color: 'white',
+                width: 'fit-content'
+              }}
+            />
+          </Tooltip>
+        </Stack>
 
-          {task.description && (
-            <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
-              {task.description}
-            </Typography>
-          )}
+        {task.description && (
+          <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
+            {task.description}
+          </Typography>
+        )}
 
-          {task.dueDate && (
-            <Typography variant="caption" color="text.secondary">
-              截止日期: {new Date(task.dueDate).toLocaleDateString()}
-            </Typography>
-          )}
-
-          {task.children && task.children.length > 0 && (
-            <Typography variant="caption" color="text.secondary">
-              子任务: {task.children.length} 个
-            </Typography>
-          )}
-        </Box>
+        {task.dueDate && (
+          <Typography variant="caption" color="text.secondary">
+            截止日期: {new Date(task.dueDate).toLocaleDateString()}
+          </Typography>
+        )}
       </CardContent>
 
       <Handle type="source" position={Position.Right} />
