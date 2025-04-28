@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Stack,
@@ -7,11 +7,15 @@ import {
   Box,
   Tooltip,
   Paper,
-  Typography
+  Typography,
+  Collapse,
+  IconButton
 } from '@mui/material';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AddIcon from '@mui/icons-material/Add';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import TaskFilter from './TaskFilter';
 
@@ -32,6 +36,8 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
   viewMode,
   onViewModeChange
 }) => {
+  const [expanded, setExpanded] = useState(true);
+
   const handleViewModeChange = (
     _event: React.MouseEvent<HTMLElement>,
     newViewMode: 'list' | 'mindmap'
@@ -55,9 +61,14 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
     >
       <Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" component="h2">
-            任务列表
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton onClick={() => setExpanded(!expanded)} size="small" sx={{ mr: 1 }}>
+              {expanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+            <Typography variant="h6" component="h2">
+              任务列表
+            </Typography>
+          </Box>
           <Stack direction="row" spacing={2} alignItems="center">
             <ToggleButtonGroup
               value={viewMode}
@@ -106,7 +117,9 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
             </Button>
           </Stack>
         </Box>
-        <TaskFilter filters={filters} onFilterChange={onFilterChange} />
+        <Collapse in={expanded}>
+          <TaskFilter filters={filters} onFilterChange={onFilterChange} />
+        </Collapse>
       </Box>
     </Paper>
   );
