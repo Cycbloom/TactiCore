@@ -149,12 +149,6 @@ const TaskMindMap: React.FC<TaskMindMapProps> = ({
         return;
       }
 
-      // 检查新的任务层级是否超过限制
-      const newPath = [...parentPath, movingNode.data.task.id];
-      if (newPath.length > 4) {
-        return;
-      }
-
       // 执行任务移动
       onMoveTask(movingPath, parentPath);
     },

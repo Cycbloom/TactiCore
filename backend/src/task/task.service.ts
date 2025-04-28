@@ -67,13 +67,6 @@ export class TaskService implements OnModuleInit {
             `Parent task with ID ${parentId} not found`,
           );
         }
-
-        if (parentTask.path.length > 3) {
-          throw new ValidationException('任务层级不能超过4层', {
-            currentLevel: parentTask.path.length,
-            maxLevel: 3,
-          });
-        }
       }
 
       const siblingTasks = await this.prisma.task.count({
@@ -101,6 +94,63 @@ export class TaskService implements OnModuleInit {
     }
   }
 
+  private async getTaskTree(taskId: string): Promise<TaskResponseDto> {
+    // 首先获取所有相关任务的ID
+    const taskIds = new Set<string>();
+    const taskMap = new Map<string, any>();
+
+    // 递归获取所有相关任务ID
+    const collectTaskIds = async (id: string) => {
+      if (taskIds.has(id)) return;
+      taskIds.add(id);
+
+      const task = await this.prisma.task.findUnique({
+        where: { id },
+        select: { id: true, children: { select: { id: true } } },
+      });
+
+      if (task) {
+        taskMap.set(id, task);
+        for (const child of task.children) {
+          await collectTaskIds(child.id);
+        }
+      }
+    };
+
+    await collectTaskIds(taskId);
+
+    // 批量获取所有任务数据
+    const tasks = await this.prisma.task.findMany({
+      where: { id: { in: Array.from(taskIds) } },
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+    });
+
+    // 构建任务树
+    const buildTree = (id: string): TaskResponseDto | undefined => {
+      const task = tasks.find((t) => t.id === id);
+      if (!task) return undefined;
+
+      const taskWithChildren = this.convertToTaskResponseDto(task);
+      const children = taskMap.get(id)?.children || [];
+
+      taskWithChildren.children = children
+        .map((child) => buildTree(child.id))
+        .filter((t): t is TaskResponseDto => t !== undefined);
+
+      return taskWithChildren;
+    };
+
+    const result = buildTree(taskId);
+    if (!result) {
+      throw new NotFoundException(`Task with ID ${taskId} not found`);
+    }
+    return result;
+  }
+
+  async getTask(id: string): Promise<TaskResponseDto> {
+    return this.getTaskTree(id);
+  }
+
   async getTasks(filter: TaskFilterDto): Promise<TaskResponseDto[]> {
     const where = {
       ...(filter.status && { status: filter.status }),
@@ -123,39 +173,13 @@ export class TaskService implements OnModuleInit {
       isRoot: false,
     };
 
-    const tasks = await this.prisma.task.findMany({
+    const rootTasks = await this.prisma.task.findMany({
       where,
       orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
-      include: {
-        children: {
-          orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
-          include: {
-            children: true,
-          },
-        },
-      },
-    });
-    return tasks.map((task) => this.convertToTaskResponseDto(task));
-  }
-
-  async getTask(id: string): Promise<TaskResponseDto> {
-    const task = await this.prisma.task.findUnique({
-      where: { id },
-      include: {
-        children: {
-          orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
-          include: {
-            children: true,
-          },
-        },
-      },
     });
 
-    if (!task) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
-    }
-
-    return this.convertToTaskResponseDto(task);
+    // 递归获取每个根任务的完整树
+    return Promise.all(rootTasks.map((task) => this.getTaskTree(task.id)));
   }
 
   async updateTask(
@@ -188,16 +212,8 @@ export class TaskService implements OnModuleInit {
               `Parent task with ID ${newParentId} not found`,
             );
           }
-
           if (await this.wouldCreateCycle(id, newParentId)) {
             throw new BusinessException('不能创建循环依赖关系');
-          }
-
-          if (parentTask.path.length > 3) {
-            throw new ValidationException('任务层级不能超过4层', {
-              currentLevel: parentTask.path.length,
-              maxLevel: 3,
-            });
           }
         }
 

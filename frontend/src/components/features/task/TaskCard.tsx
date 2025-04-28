@@ -70,9 +70,6 @@ const TaskCard: React.FC<TaskProps> = ({
       if (item.path === task.path) return false;
       // 不能拖拽到子任务中
       if (task.path.includes(item.path[item.path.length - 1])) return false;
-      // 检查新的层级是否超过四层
-      const newPath = [...task.path, item.path[item.path.length - 1]];
-      if (newPath.length > 4) return false;
       return true;
     },
     collect: monitor => ({
@@ -189,16 +186,14 @@ const TaskCard: React.FC<TaskProps> = ({
             >
               <DeleteIcon />
             </IconButton>
-            {level < 2 && (
-              <IconButton
-                size="small"
-                onClick={() => {
-                  onAddSubtask?.(task.id);
-                }}
-              >
-                <AddIcon />
-              </IconButton>
-            )}
+            <IconButton
+              size="small"
+              onClick={() => {
+                onAddSubtask?.(task.id);
+              }}
+            >
+              <AddIcon />
+            </IconButton>
           </Stack>
         </Box>
 

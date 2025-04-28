@@ -143,12 +143,6 @@ const TaskPage: React.FC = () => {
         return;
       }
 
-      // 检查新的任务层级是否超过四层
-      if (newTaskPath.length > 3) {
-        setError('任务层级不能超过四层');
-        return;
-      }
-
       const updatedTask = await taskApi.updateTask(taskId, { parentId: newTaskId });
       deleteTask(taskPath);
       addTask(updatedTask);
@@ -165,7 +159,7 @@ const TaskPage: React.FC = () => {
   };
 
   const handleViewModeChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newViewMode: 'list' | 'mindmap'
   ) => {
     if (newViewMode !== null) {

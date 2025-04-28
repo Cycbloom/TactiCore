@@ -30,9 +30,6 @@ const TaskNode: React.FC<TaskNodeProps> = ({ data }) => {
     // [TaskStatus.BLOCKED]: '#f44336'
   };
 
-  // 检查是否超过三层
-  const isMaxLevel = level >= 2;
-
   return (
     <Card
       sx={{
@@ -54,16 +51,14 @@ const TaskNode: React.FC<TaskNodeProps> = ({ data }) => {
             {label}
           </Typography>
           <Box>
-            <Tooltip title={isMaxLevel ? '已达到最大层级' : '添加子任务'}>
+            <Tooltip title="添加子任务">
               <span>
                 <IconButton
                   size="small"
                   onClick={onAddSubtask}
-                  disabled={isMaxLevel}
                   sx={{
-                    opacity: isMaxLevel ? 0.5 : 1,
                     '&:hover': {
-                      backgroundColor: isMaxLevel ? 'transparent' : 'rgba(0, 0, 0, 0.04)'
+                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
                     }
                   }}
                 >
