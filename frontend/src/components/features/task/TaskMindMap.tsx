@@ -2,16 +2,12 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import ReactFlow, {
   Node,
   Edge,
-  Controls,
   Background,
   useNodesState,
   useEdgesState,
   Position,
   Connection,
-  addEdge,
   OnConnect,
-  EdgeChange,
-  NodeChange,
   useReactFlow,
   ReactFlowProvider,
   Panel,
@@ -21,7 +17,6 @@ import 'reactflow/dist/style.css';
 import {
   Box,
   Paper,
-  Typography,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -85,7 +80,7 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
 
   // 递归处理任务及其子任务
   const processTask = useCallback(
-    (task: Task, level: number = 0, index: number = 0) => {
+    (task: Task, level: number = 0, _index: number = 0) => {
       const nodes: Node[] = [];
       const edges: Edge[] = [];
 
@@ -212,7 +207,7 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
 
   // 自动布局
   const handleAutoLayout = useCallback(() => {
-    const newNodes = nodes.map((node, index) => {
+    const newNodes = nodes.map((node, _index) => {
       const level = node.data.level;
       const siblings = nodes.filter(n => n.data.level === level);
       const siblingIndex = siblings.findIndex(n => n.id === node.id);

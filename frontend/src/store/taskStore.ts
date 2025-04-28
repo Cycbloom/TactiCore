@@ -26,8 +26,6 @@ interface TaskActions {
   getTaskByPath: (path: string[]) => Task | null;
 }
 
-const ROOT_TASK_ID = '00000000-0000-0000-0000-000000000000';
-
 // 递归处理任务树
 const processTaskTree = (
   tasks: Task[],
