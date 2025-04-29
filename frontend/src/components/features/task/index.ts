@@ -1,4 +1,4 @@
-export { default as TaskMindMap } from './TaskMindMap';
-export { default as TaskList } from './TaskList';
-export { default as TaskDialogs } from './TaskDialogs';
+export { TaskMindMap } from './TaskMindMap';
+export { TaskList } from './TaskList';
+export { TaskDialogs } from './TaskDialogs';
 export { default as TaskPage } from './TaskPage';

@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Stack, Box } from '@mui/material';
 import { useDrop } from 'react-dnd';
 
-import TaskCard from './TaskCard';
+import TaskCard from './TaskCard/TaskCard';
 
 import { Task, TaskStatus } from '@/types/task';
 

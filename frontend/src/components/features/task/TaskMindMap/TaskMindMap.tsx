@@ -16,7 +16,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { Box, Paper } from '@mui/material';
 
-import TaskNode from './TaskNode';
+import TaskNode from './TaskNode/TaskNode';
 import MindMapControls from './MindMapControls';
 import MindMapContextMenu from './MindMapContextMenu';
 import { useMindMapLayout } from './useMindMapLayout';

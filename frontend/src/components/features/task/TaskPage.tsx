@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Container, Typography, CircularProgress, Snackbar, Alert } from '@mui/material';
 
-import TaskHeader from './TaskHeader';
-import TaskList from './TaskList';
-import TaskMindMap from './TaskMindMap';
-import TaskDialogs from './TaskDialogs';
+import TaskHeader from './TaskHeader/TaskHeader';
+import TaskList from './TaskList/TaskList';
+import TaskMindMap from './TaskMindMap/TaskMindMap';
+import TaskDialogs from './TaskDialogs/TaskDialogs';
 import { useTaskOperations } from './useTaskOperations';
 import { useTaskHistory } from './useTaskHistory';
 
