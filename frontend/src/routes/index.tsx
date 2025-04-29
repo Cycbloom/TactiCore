@@ -1,6 +1,7 @@
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 
 import { TaskPage } from '../components/features/task';
+import { TaskDetailPage } from '../components/features/task/TaskDetail';
 import { LoginForm } from '../components/features';
 import { ProtectedRoute } from '../contexts';
 
@@ -26,6 +27,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute showLoading={false}>
         <TaskPage />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/tasks/:taskId',
+    element: (
+      <ProtectedRoute showLoading={false}>
+        <TaskDetailPage />
       </ProtectedRoute>
     )
   }

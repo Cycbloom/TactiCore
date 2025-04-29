@@ -7,8 +7,10 @@ import {
   Add as AddIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  DragIndicator as DragIndicatorIcon
+  DragIndicator as DragIndicatorIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 import { Task, TaskStatus } from '@/types/task';
 
@@ -34,6 +36,8 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
   onStatusChange,
   onAddSubtask
 }) => {
+  const navigate = useNavigate();
+
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center">
       <Box display="flex" alignItems="center">
@@ -94,6 +98,14 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
           }}
         >
           <AddIcon />
+        </IconButton>
+        <IconButton
+          size="small"
+          onClick={() => {
+            navigate(`/tasks/${task.id}`);
+          }}
+        >
+          <VisibilityIcon />
         </IconButton>
       </Stack>
     </Box>
