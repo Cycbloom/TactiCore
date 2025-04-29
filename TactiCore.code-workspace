@@ -1,11 +1,29 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../../Blog"
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "../../Blog"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.commitlintrc.json": true,
+      "**/.gitmessage": true,
+      "**/.gitignore": true,
+      "**/.editorconfig": true,
+      "**/.prettierrc": true,
+      "**/.eslintrc": true,
+      "**/node_modules": true,
+      "**/.vscode": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-typescript-next"
+    ]
+  }
 }
