@@ -33,7 +33,11 @@ export const toHistoryTaskData = (task: Task): HistoryTaskData => {
       priority: task.priority,
       dueDate: task.dueDate,
       tags: task.tags,
-      parentId: task.parentId
+      parentId: task.parentId,
+      priorityScore: task.priorityScore,
+      estimatedHours: task.estimatedHours,
+      actualHours: task.actualHours,
+      dependencies: task.dependencies
     },
     path: task.path
   };
