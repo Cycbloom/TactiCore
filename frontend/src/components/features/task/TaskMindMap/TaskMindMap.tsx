@@ -1,28 +1,44 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import ReactFlow, {
+  Node,
+  Edge,
   Background,
-  MiniMap,
-  Panel,
+  useNodesState,
+  useEdgesState,
+  Position,
+  Connection,
+  OnConnect,
   useReactFlow,
   ReactFlowProvider,
-  Connection,
-  Edge,
-  Node,
-  NodeChange,
-  EdgeChange,
-  OnNodesChange,
-  OnEdgesChange
+  Panel,
+  MiniMap
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Box, Paper } from '@mui/material';
+import {
+  Box,
+  Paper,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  TextField,
+  IconButton,
+  Tooltip
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
-import TaskNode from './TaskNode/TaskNode';
+import { TaskNode } from './TaskNode';
 import MindMapControls from './MindMapControls';
 import MindMapContextMenu from './MindMapContextMenu';
-import { useMindMapLayout } from './useMindMapLayout';
-import { useMindMapNodes } from './useMindMapNodes';
 
-import { Task, TaskStatus } from '@/types/task';
+import { Task, TaskStatus, ROOT_TASK_ID } from '@/types/task';
 
 // 注册自定义节点
 const nodeTypes = {
@@ -46,32 +62,122 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
   onAddSubtask,
   onMoveTask
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
   const [contextMenu, setContextMenu] = useState<{
     mouseX: number;
     mouseY: number;
     nodeId?: string;
   } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const nodesRef = useRef(nodes);
 
-  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const { getNode, zoomIn, zoomOut, fitView } = useReactFlow();
 
-  const { nodes, edges, setNodes, setEdges, nodesRef } = useMindMapNodes({
-    tasks,
-    onEditTask,
-    onDeleteTask,
-    onToggleStatus,
-    onAddSubtask,
-    onMoveTask
-  });
+  // 更新ref
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
 
-  const { handleAutoLayout } = useMindMapLayout({
-    nodes,
-    setNodes,
-    fitView
-  });
+  // 递归处理任务及其子任务
+  const processTask = useCallback(
+    (task: Task, level: number = 0, _index: number = 0) => {
+      const nodes: Node[] = [];
+      const edges: Edge[] = [];
+
+      // 检查当前节点是否被折叠
+      const isCollapsed = collapsedNodes.has(task.id);
+      const hasChildren = task.children && task.children.length > 0;
+
+      // 创建当前任务节点
+      nodes.push({
+        id: task.id,
+        data: {
+          label: task.title,
+          task,
+          onEdit: () => onEditTask(task),
+          onDelete: () => onDeleteTask(task.path),
+          onToggleStatus: (status: TaskStatus) => onToggleStatus(task.path, status),
+          onAddSubtask: () => onAddSubtask(task.id),
+          onToggleCollapse: () => {
+            setCollapsedNodes(prev => {
+              const newSet = new Set(prev);
+              if (newSet.has(task.id)) {
+                newSet.delete(task.id);
+              } else {
+                newSet.add(task.id);
+              }
+              return newSet;
+            });
+          },
+          isCollapsed,
+          hasChildren,
+          level
+        },
+        position: {
+          x: 0,
+          y: 0
+        },
+        type: 'taskNode',
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left
+      });
+
+      // 如果有父任务，创建连接边
+      if (task.path.length > 2) {
+        const parentId = task.path[task.path.length - 2];
+        edges.push({
+          id: `${parentId}-${task.id}`,
+          source: parentId,
+          target: task.id,
+          type: 'smoothstep',
+          animated: true,
+          style: { stroke: '#b1b1b7' }
+        });
+      }
+
+      // 如果节点没有被折叠，递归处理子任务
+      if (!isCollapsed && task.children && task.children.length > 0) {
+        task.children.forEach((childTask, childIndex) => {
+          const { nodes: childNodes, edges: childEdges } = processTask(
+            childTask,
+            level + 1,
+            childIndex
+          );
+          nodes.push(...childNodes);
+          edges.push(...childEdges);
+        });
+      }
+
+      return { nodes, edges };
+    },
+    [onEditTask, onDeleteTask, onToggleStatus, onAddSubtask, collapsedNodes]
+  );
+
+  // 将任务数据转换为节点和边
+  const transformTasksToNodesAndEdges = useCallback(() => {
+    const allNodes: Node[] = [];
+    const allEdges: Edge[] = [];
+
+    // 处理所有根任务
+    tasks.forEach((task, index) => {
+      const { nodes, edges } = processTask(task, 0, index);
+      allNodes.push(...nodes);
+      allEdges.push(...edges);
+    });
+
+    setNodes(allNodes);
+    setEdges(allEdges);
+  }, [tasks, processTask, setNodes, setEdges]);
+
+  // 当任务数据变化时更新节点和边
+  React.useEffect(() => {
+    transformTasksToNodesAndEdges();
+  }, [tasks, transformTasksToNodesAndEdges]);
 
   // 处理连线事件
-  const onConnect = useCallback(
+  const onConnect: OnConnect = useCallback(
     (connection: Connection) => {
       if (!connection.source || !connection.target) return;
 
@@ -101,6 +207,36 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
     [nodes, onMoveTask]
   );
 
+  // 自动布局
+  const handleAutoLayout = useCallback(() => {
+    const newNodes = nodes.map((node, _index) => {
+      const level = node.data.level;
+      const siblings = nodes.filter(n => n.data.level === level);
+      const siblingIndex = siblings.findIndex(n => n.id === node.id);
+      const totalSiblings = siblings.length;
+
+      return {
+        ...node,
+        position: {
+          x: level * 300,
+          y: (siblingIndex - (totalSiblings - 1) / 2) * 150
+        }
+      };
+    });
+    setNodes(newNodes);
+    fitView();
+  }, [nodes, setNodes, fitView]);
+
+  // 当节点数据变化时应用布局
+  React.useEffect(() => {
+    if (
+      nodesRef.current.length > 0 &&
+      !nodesRef.current.some(node => node.position.x !== 0 || node.position.y !== 0)
+    ) {
+      handleAutoLayout();
+    }
+  }, [nodes.length, handleAutoLayout]);
+
   // 处理边的删除
   const onEdgesDelete = useCallback(
     (edgesToDelete: Edge[]) => {
@@ -115,22 +251,26 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
         const movingPath = movingNode.data.task.path;
 
         // 将任务移动到根节点
-        onMoveTask(movingPath, []);
+        onMoveTask(movingPath, [ROOT_TASK_ID]);
       });
     },
     [nodes, onMoveTask]
   );
 
-  const handleContextMenu = useCallback((event: React.MouseEvent) => {
-    event.preventDefault();
-    const target = event.target as HTMLElement;
-    const nodeId = target.closest('.react-flow__node')?.getAttribute('data-id') || undefined;
-    setContextMenu({
-      mouseX: event.clientX,
-      mouseY: event.clientY,
-      nodeId
-    });
-  }, []);
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      const target = event.target as HTMLElement;
+      const nodeId = target.closest('.react-flow__node')?.getAttribute('data-id');
+      const node = nodeId ? getNode(nodeId) : null;
+      setContextMenu({
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+        nodeId: node?.id
+      });
+    },
+    [getNode]
+  );
 
   const handleCloseContextMenu = useCallback(() => {
     setContextMenu(null);
@@ -177,44 +317,6 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
     [nodes, fitView]
   );
 
-  // 处理节点变化
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      setNodes(nds => {
-        const newNodes = [...nds];
-        changes.forEach(change => {
-          if (change.type === 'position' && change.position) {
-            const node = newNodes.find(n => n.id === change.id);
-            if (node) {
-              node.position = change.position;
-            }
-          }
-        });
-        return newNodes;
-      });
-    },
-    [setNodes]
-  );
-
-  // 处理边变化
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes: EdgeChange[]) => {
-      setEdges(eds => {
-        const newEdges = [...eds];
-        changes.forEach(change => {
-          if (change.type === 'remove') {
-            const index = newEdges.findIndex(e => e.id === change.id);
-            if (index !== -1) {
-              newEdges.splice(index, 1);
-            }
-          }
-        });
-        return newEdges;
-      });
-    },
-    [setEdges]
-  );
-
   return (
     <Box sx={{ height: 'calc(100vh - 200px)', width: '100%' }}>
       <Paper elevation={3} sx={{ height: '100%', width: '100%' }}>
@@ -245,16 +347,21 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
               searchQuery={searchQuery}
               onSearch={handleSearch}
               onAutoLayout={handleAutoLayout}
-              onZoomIn={zoomIn}
-              onZoomOut={zoomOut}
-              onFitView={fitView}
+              onZoomIn={() => zoomIn()}
+              onZoomOut={() => zoomOut()}
+              onFitView={() => fitView()}
             />
           </Panel>
         </ReactFlow>
         <MindMapContextMenu
           open={contextMenu !== null}
           anchorPosition={
-            contextMenu !== null ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined
+            contextMenu?.mouseX && contextMenu?.mouseY
+              ? {
+                  top: contextMenu.mouseY,
+                  left: contextMenu.mouseX
+                }
+              : undefined
           }
           onClose={handleCloseContextMenu}
           onAddSubtask={handleAddSubtaskFromContext}

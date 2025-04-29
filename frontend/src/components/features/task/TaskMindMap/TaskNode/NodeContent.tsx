@@ -12,26 +12,26 @@ const NodeContent: React.FC<NodeContentProps> = ({ task }) => {
   const getPriorityColor = (priority: TaskPriority) => {
     switch (priority) {
       case 'urgent':
-        return 'error';
+        return '#d32f2f';
       case 'high':
-        return 'error';
+        return '#f44336';
       case 'medium':
-        return 'warning';
+        return '#ff9800';
       case 'low':
-        return 'success';
+        return '#4caf50';
       case 'minimal':
-        return 'info';
+        return '#2196f3';
     }
   };
 
   const getStatusColor = (status: TaskStatus) => {
     switch (status) {
       case 'completed':
-        return 'success';
+        return '#4caf50';
       case 'inProgress':
-        return 'info';
+        return '#2196f3';
       case 'todo':
-        return 'default';
+        return '#757575';
     }
   };
 
@@ -50,7 +50,10 @@ const NodeContent: React.FC<NodeContentProps> = ({ task }) => {
           sx={{
             backgroundColor: getStatusColor(task.status),
             color: 'white',
-            width: 'fit-content'
+            width: 'fit-content',
+            '& .MuiChip-label': {
+              color: 'white'
+            }
           }}
         />
         <Chip
@@ -60,7 +63,10 @@ const NodeContent: React.FC<NodeContentProps> = ({ task }) => {
           sx={{
             backgroundColor: getPriorityColor(task.priority),
             color: 'white',
-            width: 'fit-content'
+            width: 'fit-content',
+            '& .MuiChip-label': {
+              color: 'white'
+            }
           }}
         />
       </Stack>
