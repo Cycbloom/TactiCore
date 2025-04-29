@@ -10,7 +10,7 @@ import { useTaskHistory } from './useTaskHistory';
 
 import { taskApi } from '@/services/api/taskApi';
 import useTaskStore from '@/store/taskStore';
-import { Task, TaskFormData, FilterFormData, TaskStatus, ROOT_TASK_ID } from '@/types/task';
+import { Task, TaskFormData, FilterFormData, ROOT_TASK_ID } from '@/types/task';
 
 const TaskPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

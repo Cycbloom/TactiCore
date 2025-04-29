@@ -1,7 +1,5 @@
 import React from 'react';
 import { Popover, Paper, Stack, Typography, Box, Divider } from '@mui/material';
-import DescriptionIcon from '@mui/icons-material/Description';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import InfoIcon from '@mui/icons-material/Info';
 
 import NodeContent from './NodeContent';

@@ -14,25 +14,7 @@ import ReactFlow, {
   MiniMap
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import {
-  Box,
-  Paper,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  TextField,
-  IconButton,
-  Tooltip
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import { Box, Paper } from '@mui/material';
 
 import { TaskNode } from './TaskNode';
 import MindMapControls from './MindMapControls';

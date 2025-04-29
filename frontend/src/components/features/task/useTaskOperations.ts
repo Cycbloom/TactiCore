@@ -6,17 +6,8 @@ import { useHistoryStore, toHistoryTaskData } from '@/store/historyStore';
 import { Task, TaskFormData, TaskStatus, ROOT_TASK_ID } from '@/types/task';
 
 export const useTaskOperations = () => {
-  const {
-    tasks,
-    loading,
-    error,
-    setLoading,
-    setError,
-    addTask,
-    updateTask,
-    deleteTask,
-    getTaskByPath
-  } = useTaskStore();
+  const { loading, error, setLoading, setError, addTask, updateTask, deleteTask, getTaskByPath } =
+    useTaskStore();
   const { addOperation } = useHistoryStore();
 
   const handleCreateTask = useCallback(

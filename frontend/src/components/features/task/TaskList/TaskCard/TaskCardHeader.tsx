@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, IconButton, Stack, Tooltip } from '@mui/material';
+import { Box, Typography, IconButton, Stack } from '@mui/material';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -26,7 +26,6 @@ interface TaskCardHeaderProps {
 
 const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
   task,
-  isDragging,
   dragRef,
   expanded,
   onExpandClick,
