@@ -1,22 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Dialog,
-  CircularProgress,
-  Snackbar,
-  Alert
-} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Container, Typography, CircularProgress, Snackbar, Alert } from '@mui/material';
 
 import TaskHeader from './TaskHeader';
 import TaskList from './TaskList';
-import TaskForm from './TaskForm';
 import TaskMindMap from './TaskMindMap';
+import TaskDialogs from './TaskDialogs';
+import { useTaskOperations } from './useTaskOperations';
+import { useTaskHistory } from './useTaskHistory';
 
 import { taskApi } from '@/services/api/taskApi';
 import useTaskStore from '@/store/taskStore';
-import { useHistoryStore, toHistoryTaskData } from '@/store/historyStore';
 import { Task, TaskFormData, FilterFormData, TaskStatus, ROOT_TASK_ID } from '@/types/task';
 
 const TaskPage: React.FC = () => {
@@ -24,44 +17,37 @@ const TaskPage: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [parentTaskId, setParentTaskId] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<'list' | 'mindmap'>('list');
-  const [historyError, setHistoryError] = useState<string | null>(null);
+
+  const { tasks, filters, setTasks, setFilters } = useTaskStore();
   const {
-    tasks,
     loading,
     error,
-    filters,
-    setTasks,
-    setLoading,
-    setError,
-    setFilters,
-    addTask,
-    updateTask,
-    deleteTask,
-    getTaskByPath
-  } = useTaskStore();
-  const { addOperation, undo, redo } = useHistoryStore();
+    handleCreateTask,
+    handleEditTask,
+    handleDeleteTask,
+    handleToggleStatus,
+    handleMoveTask
+  } = useTaskOperations();
+  const { historyError, setHistoryError, handleUndo, handleRedo } = useTaskHistory();
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        setLoading(true);
         const data = await taskApi.getTasks(filters as FilterFormData);
         setTasks(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '获取任务失败');
-      } finally {
-        setLoading(false);
+        console.error('获取任务失败:', err);
       }
     };
 
     fetchTasks();
-  }, [filters, setTasks, setLoading, setError]);
+  }, [filters, setTasks]);
 
   const handleFilterChange = (newFilters: FilterFormData) => {
     setFilters(newFilters);
   };
 
-  const handleEditTask = (task: Task) => {
+  const handleEditTaskClick = (task: Task) => {
     setEditingTask(task);
   };
 
@@ -72,152 +58,29 @@ const TaskPage: React.FC = () => {
 
   const handleSubmitEdit = async (formData: TaskFormData) => {
     if (editingTask) {
-      try {
-        setLoading(true);
-        const updatedTask = await taskApi.updateTask(editingTask.id, formData);
-        updateTask(updatedTask);
-        addOperation({
-          type: 'update',
-          task: toHistoryTaskData(updatedTask),
-          oldTask: toHistoryTaskData(editingTask)
-        });
+      const success = await handleEditTask(editingTask, formData);
+      if (success) {
         handleCloseEditDialog();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '更新任务失败');
-      } finally {
-        setLoading(false);
       }
     }
   };
 
-  const handleDeleteTask = async (taskPath: string[]) => {
-    try {
-      setLoading(true);
-      const taskId = taskPath[taskPath.length - 1];
-      const taskToDelete = getTaskByPath(taskPath);
-      if (!taskToDelete) return;
-
-      await taskApi.deleteTask(taskId);
-      deleteTask(taskPath);
-      addOperation({
-        type: 'delete',
-        task: toHistoryTaskData(taskToDelete)
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '删除任务失败');
-    } finally {
-      setLoading(false);
-    }
+  const handleCreateTaskClick = () => {
+    setParentTaskId(ROOT_TASK_ID);
+    setIsCreateDialogOpen(true);
   };
 
-  const handleToggleStatus = async (taskPath: string[], newStatus: TaskStatus) => {
-    try {
-      setLoading(true);
-      const taskId = taskPath[taskPath.length - 1];
-      const taskToUpdate = getTaskByPath(taskPath);
-      if (!taskToUpdate) return;
-
-      const updatedTask = await taskApi.updateTask(taskId, { status: newStatus });
-      updateTask(updatedTask);
-      addOperation({
-        type: 'update',
-        task: toHistoryTaskData(updatedTask),
-        oldTask: toHistoryTaskData(taskToUpdate)
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '更新任务状态失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateTask = async (formData: TaskFormData) => {
-    try {
-      setLoading(true);
-      const newTask = await taskApi.createTask({
-        ...formData,
-        parentId: parentTaskId || ROOT_TASK_ID
-      });
-      addTask(newTask);
-      addOperation({
-        type: 'create',
-        task: toHistoryTaskData(newTask)
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '创建任务失败');
-    } finally {
+  const handleSubmitCreate = async (formData: TaskFormData) => {
+    const success = await handleCreateTask(formData, parentTaskId);
+    if (success) {
       setIsCreateDialogOpen(false);
       setParentTaskId(undefined);
-      setLoading(false);
-    }
-  };
-
-  const handleMoveTask = async (taskPath: string[], newTaskPath: string[]) => {
-    try {
-      setLoading(true);
-      const taskId = taskPath[taskPath.length - 1];
-      const newTaskId = newTaskPath.length > 0 ? newTaskPath[newTaskPath.length - 1] : ROOT_TASK_ID;
-      const taskToMove = getTaskByPath(taskPath);
-      if (!taskToMove) return;
-
-      // 检查是否尝试将任务移动到自身
-      if (taskId === newTaskId) {
-        setError('不能将任务移动到自身');
-        return;
-      }
-
-      // 检查是否尝试将任务移动到其子任务
-      if (newTaskPath.includes(taskId)) {
-        setError('不能将任务移动到其子任务中');
-        return;
-      }
-
-      const updatedTask = await taskApi.updateTask(taskId, { parentId: newTaskId });
-      deleteTask(taskPath);
-      addTask(updatedTask);
-      addOperation({
-        type: 'move',
-        task: toHistoryTaskData(updatedTask),
-        oldTask: toHistoryTaskData(taskToMove)
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '移动任务失败');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleAddSubtask = (parentId: string) => {
     setParentTaskId(parentId);
     setIsCreateDialogOpen(true);
-  };
-
-  const handleUndo = async () => {
-    try {
-      setLoading(true);
-      await undo();
-      // 重新获取最新数据
-      const data = await taskApi.getTasks(filters as FilterFormData);
-      setTasks(data);
-    } catch (err) {
-      setHistoryError(err instanceof Error ? err.message : '撤销操作失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRedo = async () => {
-    try {
-      setLoading(true);
-      await redo();
-      // 重新获取最新数据
-      const data = await taskApi.getTasks(filters as FilterFormData);
-      setTasks(data);
-    } catch (err) {
-      setHistoryError(err instanceof Error ? err.message : '重做操作失败');
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -230,10 +93,7 @@ const TaskPage: React.FC = () => {
         <TaskHeader
           filters={filters as FilterFormData}
           onFilterChange={handleFilterChange}
-          onCreateClick={() => {
-            setParentTaskId(ROOT_TASK_ID);
-            setIsCreateDialogOpen(true);
-          }}
+          onCreateClick={handleCreateTaskClick}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onUndo={handleUndo}
@@ -268,7 +128,7 @@ const TaskPage: React.FC = () => {
           {viewMode === 'list' ? (
             <TaskList
               tasks={tasks.filter(task => task.parentId === ROOT_TASK_ID)}
-              onEditTask={handleEditTask}
+              onEditTask={handleEditTaskClick}
               onDeleteTask={handleDeleteTask}
               onToggleStatus={handleToggleStatus}
               onAddSubtask={handleAddSubtask}
@@ -277,7 +137,7 @@ const TaskPage: React.FC = () => {
           ) : (
             <TaskMindMap
               tasks={tasks}
-              onEditTask={handleEditTask}
+              onEditTask={handleEditTaskClick}
               onDeleteTask={handleDeleteTask}
               onToggleStatus={handleToggleStatus}
               onAddSubtask={handleAddSubtask}
@@ -286,40 +146,18 @@ const TaskPage: React.FC = () => {
           )}
         </Box>
 
-        <Dialog
-          open={isCreateDialogOpen}
-          onClose={() => {
+        <TaskDialogs
+          isCreateDialogOpen={isCreateDialogOpen}
+          editingTask={editingTask}
+          parentTaskId={parentTaskId}
+          onCloseCreateDialog={() => {
             setIsCreateDialogOpen(false);
             setParentTaskId(undefined);
           }}
-          maxWidth="sm"
-          fullWidth
-        >
-          <Box sx={{ p: 3 }}>
-            <TaskForm
-              onSubmit={handleCreateTask}
-              onCancel={() => {
-                setIsCreateDialogOpen(false);
-                setParentTaskId(undefined);
-              }}
-              initialData={parentTaskId ? { parentId: parentTaskId } : undefined}
-              formTitle={parentTaskId ? '创建子任务' : '创建任务'}
-              submitText={parentTaskId ? '创建子任务' : '创建任务'}
-            />
-          </Box>
-        </Dialog>
-
-        <Dialog open={!!editingTask} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-          <Box sx={{ p: 3 }}>
-            <TaskForm
-              initialData={editingTask || undefined}
-              onSubmit={handleSubmitEdit}
-              onCancel={handleCloseEditDialog}
-              formTitle="编辑任务"
-              submitText="保存"
-            />
-          </Box>
-        </Dialog>
+          onCloseEditDialog={handleCloseEditDialog}
+          onSubmitCreate={handleSubmitCreate}
+          onSubmitEdit={handleSubmitEdit}
+        />
 
         <Snackbar
           open={!!historyError}
