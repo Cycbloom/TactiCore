@@ -1,7 +1,7 @@
 // src/components/forms/PrioritySelect.tsx
 import { JSX } from 'react';
 import { Chip, Box } from '@mui/material';
-import { PriorityHigh, Schedule, LowPriority } from '@mui/icons-material';
+import { PriorityHigh, Schedule, LowPriority, Warning, Flag } from '@mui/icons-material';
 
 import GenericSelect from './GenericSelect';
 
@@ -9,10 +9,15 @@ import { priorityOptions, PriorityKey } from '@/types/task';
 
 // 增强的优先级选项配置
 const priorityConfig = {
+  urgent: {
+    color: '#ff1744',
+    icon: <Warning fontSize="small" />,
+    label: '紧急处理'
+  },
   high: {
     color: '#ff4444',
     icon: <PriorityHigh fontSize="small" />,
-    label: '紧急优先'
+    label: '高优先级'
   },
   medium: {
     color: '#ffb74d',
@@ -22,7 +27,12 @@ const priorityConfig = {
   low: {
     color: '#4caf50',
     icon: <LowPriority fontSize="small" />,
-    label: '后台任务'
+    label: '低优先级'
+  },
+  minimal: {
+    color: '#2196f3',
+    icon: <Flag fontSize="small" />,
+    label: '最低优先级'
   }
 } satisfies Record<PriorityKey, { color: string; icon: JSX.Element; label: string }>;
 

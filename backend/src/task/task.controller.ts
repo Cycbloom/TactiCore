@@ -112,18 +112,4 @@ export class TaskController {
   ): Promise<TaskResponseDto> {
     return this.taskService.createTask({ ...createTaskDto, parentId: id });
   }
-
-  @Patch(':id/order')
-  @ApiOperation({ summary: '更新任务顺序' })
-  @ApiResponse({
-    status: 200,
-    description: '任务顺序更新成功',
-    type: TaskResponseDto,
-  })
-  updateOrder(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('order') order: number,
-  ): Promise<TaskResponseDto> {
-    return this.taskService.updateTask(id, { order });
-  }
 }

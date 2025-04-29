@@ -19,9 +19,11 @@ enum TaskStatus {
 }
 
 enum TaskPriority {
-  low
-  medium
+  urgent
   high
+  medium
+  low
+  minimal
 }
 
 model User {
@@ -34,21 +36,29 @@ model User {
 }
 
 model Task {
-  id          String       @id @default(uuid())
-  title       String
-  description String?
-  status      TaskStatus   @default(todo)
-  priority    TaskPriority @default(medium)
-  dueDate     DateTime?
-  tags        String[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  parentId    String?
-  parent      Task?        @relation("TaskToSubtask", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Task[]       @relation("TaskToSubtask")
-  order       Int         @default(0)
-  path        String[]    @default([])
-  isRoot      Boolean     @default(false)
+  id            String       @id @default(uuid())
+  title         String
+  description   String?
+  status        TaskStatus   @default(todo)
+  priority      TaskPriority @default(medium)
+  priorityScore Int         @default(50)
+  estimatedHours Float?
+  actualHours   Float?
+  dueDate       DateTime?
+  tags          String[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  parentId      String?
+  parent        Task?        @relation("TaskToSubtask", fields: [parentId], references: [id], onDelete: Cascade)
+  children      Task[]       @relation("TaskToSubtask")
+  order         Int         @default(0)
+  path          String[]    @default([])
+  isRoot        Boolean     @default(false)
+  lastPostponed DateTime?
+  postponeCount Int         @default(0)
+  isUrgent      Boolean     @default(false)
+  dependencies  String[]    @default([])
+  isBlocked     Boolean     @default(false)
 
   @@index([parentId])
 }

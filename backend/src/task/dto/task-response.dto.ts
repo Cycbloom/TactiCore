@@ -10,7 +10,7 @@ export class TaskResponseDto {
   title: string;
 
   @ApiProperty({ description: '任务描述', required: false, nullable: true })
-  description: string | null;
+  description?: string;
 
   @ApiProperty({ description: '任务状态', enum: TaskStatus })
   status: TaskStatus;
@@ -18,20 +18,32 @@ export class TaskResponseDto {
   @ApiProperty({ description: '任务优先级', enum: TaskPriority })
   priority: TaskPriority;
 
-  @ApiProperty({ description: '截止日期', required: false })
+  @ApiProperty({ minimum: 0, maximum: 100 })
+  priorityScore: number;
+
+  @ApiProperty({ required: false, minimum: 0 })
+  estimatedHours?: number;
+
+  @ApiProperty({ required: false, minimum: 0 })
+  actualHours?: number;
+
+  @ApiProperty({ required: false })
   dueDate?: Date;
 
-  @ApiProperty({ description: '标签列表', type: [String], required: false })
-  tags?: string[];
+  @ApiProperty({ type: [String] })
+  tags: string[];
 
-  @ApiProperty({ description: '创建时间' })
+  @ApiProperty()
   createdAt: Date;
 
-  @ApiProperty({ description: '更新时间' })
+  @ApiProperty()
   updatedAt: Date;
 
-  @ApiProperty({ description: '父任务ID', required: false })
+  @ApiProperty({ required: false })
   parentId?: string;
+
+  @ApiProperty({ type: [String] })
+  path: string[];
 
   @ApiProperty({
     description: '子任务列表',
@@ -40,9 +52,24 @@ export class TaskResponseDto {
   })
   children?: TaskResponseDto[];
 
-  @ApiProperty({ description: '同级任务排序', default: 0 })
+  @ApiProperty()
   order: number;
 
-  @ApiProperty({ description: '任务路径', type: [String] })
-  path: string[];
+  @ApiProperty()
+  isRoot: boolean;
+
+  @ApiProperty({ required: false })
+  lastPostponed?: Date;
+
+  @ApiProperty()
+  postponeCount: number;
+
+  @ApiProperty()
+  isUrgent: boolean;
+
+  @ApiProperty({ type: [String] })
+  dependencies: string[];
+
+  @ApiProperty()
+  isBlocked: boolean;
 }

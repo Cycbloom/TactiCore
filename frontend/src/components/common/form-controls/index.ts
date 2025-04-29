@@ -6,5 +6,6 @@ export { default as PrioritySelect } from './PrioritySelect';
 export { default as StatusSelect } from './StatusSelect';
 export { default as TagAutocomplete } from './TagAutocomplete';
 export { default as TagInput } from './TagInput';
+export { default as NumberInput } from './NumberInput';
 
 export type { SelectOption } from './GenericSelect';

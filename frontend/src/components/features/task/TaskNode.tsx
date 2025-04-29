@@ -76,9 +76,11 @@ const TaskNode: React.FC<TaskNodeProps> = ({ data }) => {
 
   // 优先级颜色映射
   const priorityColors: Record<TaskPriority, string> = {
-    [TaskPriority.HIGH]: '#f44336',
+    [TaskPriority.MINIMAL]: '#9e9e9e',
+    [TaskPriority.LOW]: '#4caf50',
     [TaskPriority.MEDIUM]: '#ff9800',
-    [TaskPriority.LOW]: '#4caf50'
+    [TaskPriority.HIGH]: '#f44336',
+    [TaskPriority.URGENT]: '#f44336'
   };
 
   // 获取节点背景色

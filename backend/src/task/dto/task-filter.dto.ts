@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsDate, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsDate,
+  IsArray,
+  IsBoolean,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { TaskStatus, TaskPriority } from './task.enum';
@@ -41,4 +48,12 @@ export class TaskFilterDto {
   @Type(() => Date)
   @IsOptional()
   endDate?: Date;
+
+  @IsBoolean()
+  @IsOptional()
+  isUrgent?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isBlocked?: boolean;
 }

@@ -9,7 +9,8 @@ import {
   PrioritySelect,
   StatusSelect,
   DatePickerField,
-  TagAutocomplete
+  TagAutocomplete,
+  NumberInput
 } from '@/components/common/form-controls';
 import { taskSchema, TaskFormData } from '@/types/task';
 
@@ -33,9 +34,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
     description: initialData?.description || '',
     status: initialData?.status || 'todo',
     priority: initialData?.priority || 'medium',
+    priorityScore: initialData?.priorityScore || 50,
+    estimatedHours: initialData?.estimatedHours || 0,
+    actualHours: initialData?.actualHours || 0,
     dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : undefined,
     tags: initialData?.tags || [],
-    parentId: initialData?.parentId || undefined
+    parentId: initialData?.parentId || undefined,
+    dependencies: initialData?.dependencies || []
   };
 
   return (
@@ -61,6 +66,19 @@ const TaskForm: React.FC<TaskFormProps> = ({
         <Stack direction="row" spacing={2}>
           <StatusSelect />
           <PrioritySelect />
+        </Stack>
+
+        <Stack direction="row" spacing={2}>
+          <NumberInput
+            name="priorityScore"
+            label="优先级分数"
+            min={0}
+            max={100}
+            step={1}
+            validation={{ required: true }}
+          />
+          <NumberInput name="estimatedHours" label="预计工时" min={0} step={0.5} />
+          <NumberInput name="actualHours" label="实际工时" min={0} step={0.5} />
         </Stack>
 
         <DatePickerField name="dueDate" label="截止日期" />

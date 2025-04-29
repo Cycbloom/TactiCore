@@ -83,12 +83,16 @@ const TaskCard: React.FC<TaskProps> = ({
 
   const getPriorityColor = (priority: TaskPriority) => {
     switch (priority) {
+      case 'urgent':
+        return 'error';
       case 'high':
         return 'error';
       case 'medium':
         return 'warning';
       case 'low':
         return 'success';
+      case 'minimal':
+        return 'info';
     }
   };
 
@@ -206,7 +210,11 @@ const TaskCard: React.FC<TaskProps> = ({
         <Box sx={{ mt: 2 }}>
           <Stack direction="row" spacing={1}>
             <Chip label={task.status} color={getStatusColor(task.status)} size="small" />
-            <Chip label={task.priority} color={getPriorityColor(task.priority)} size="small" />
+            <Chip
+              label={`${task.priority} (${task.priorityScore})`}
+              color={getPriorityColor(task.priority)}
+              size="small"
+            />
             {task.dueDate && (
               <Chip
                 label={new Date(task.dueDate).toLocaleDateString()}
@@ -214,6 +222,19 @@ const TaskCard: React.FC<TaskProps> = ({
                 size="small"
               />
             )}
+          </Stack>
+        </Box>
+
+        <Box sx={{ mt: 1 }}>
+          <Stack direction="row" spacing={1}>
+            {task.estimatedHours && (
+              <Chip label={`预计: ${task.estimatedHours}h`} variant="outlined" size="small" />
+            )}
+            {task.actualHours && (
+              <Chip label={`实际: ${task.actualHours}h`} variant="outlined" size="small" />
+            )}
+            {task.isUrgent && <Chip label="紧急" color="error" size="small" />}
+            {task.isBlocked && <Chip label="已阻塞" color="error" size="small" />}
           </Stack>
         </Box>
 

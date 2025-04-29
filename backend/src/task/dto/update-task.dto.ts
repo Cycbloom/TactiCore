@@ -7,6 +7,9 @@ import {
   IsArray,
   IsNumber,
   IsUUID,
+  Min,
+  Max,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -21,7 +24,7 @@ export class UpdateTaskDto {
   @ApiProperty({ description: '任务描述', required: false, nullable: true })
   @IsString()
   @IsOptional()
-  description?: string | null;
+  description?: string;
 
   @ApiProperty({
     description: '任务状态',
@@ -41,6 +44,38 @@ export class UpdateTaskDto {
   @IsOptional()
   priority?: TaskPriority;
 
+  @ApiProperty({
+    description: '优先级分数',
+    minimum: 0,
+    maximum: 100,
+    required: false,
+  })
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  @IsOptional()
+  priorityScore?: number;
+
+  @ApiProperty({
+    description: '估计小时数',
+    minimum: 0,
+    required: false,
+  })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  estimatedHours?: number;
+
+  @ApiProperty({
+    description: '实际小时数',
+    minimum: 0,
+    required: false,
+  })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  actualHours?: number;
+
   @ApiProperty({ description: '截止日期', required: false })
   @IsDate()
   @Type(() => Date)
@@ -58,8 +93,19 @@ export class UpdateTaskDto {
   @IsOptional()
   parentId?: string;
 
-  @ApiProperty({ description: '同级任务排序', required: false })
-  @IsNumber()
+  @ApiProperty({ description: '依赖任务列表', type: [String], required: false })
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  order?: number;
+  dependencies?: string[];
+
+  @ApiProperty({ description: '是否紧急', required: false })
+  @IsBoolean()
+  @IsOptional()
+  isUrgent?: boolean;
+
+  @ApiProperty({ description: '是否阻塞', required: false })
+  @IsBoolean()
+  @IsOptional()
+  isBlocked?: boolean;
 }
