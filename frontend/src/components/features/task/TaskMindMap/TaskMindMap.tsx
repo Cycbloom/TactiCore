@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -205,19 +205,33 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
         }
       };
     });
-    setNodes(newNodes);
-    fitView();
+
+    // 只有当节点位置确实需要更新时才更新
+    const hasPositionChanged = newNodes.some((node, index) => {
+      const oldNode = nodes[index];
+      return node.position.x !== oldNode.position.x || node.position.y !== oldNode.position.y;
+    });
+
+    if (hasPositionChanged) {
+      setNodes(newNodes);
+      // 使用 requestAnimationFrame 替代 setTimeout 以获得更好的性能
+      requestAnimationFrame(() => {
+        fitView();
+      });
+    }
   }, [nodes, setNodes, fitView]);
+
+  // 使用 useMemo 缓存节点的位置检查结果
+  const shouldTriggerLayout = useMemo(() => {
+    return nodes.length > 0 && nodes.every(node => node.position.x === 0 && node.position.y === 0);
+  }, [nodes]);
 
   // 当节点数据变化时应用布局
   React.useEffect(() => {
-    if (
-      nodesRef.current.length > 0 &&
-      !nodesRef.current.some(node => node.position.x !== 0 || node.position.y !== 0)
-    ) {
+    if (shouldTriggerLayout) {
       handleAutoLayout();
     }
-  }, [nodes.length, handleAutoLayout]);
+  }, [shouldTriggerLayout, handleAutoLayout]);
 
   // 处理边的删除
   const onEdgesDelete = useCallback(
@@ -329,9 +343,9 @@ const TaskMindMapContent: React.FC<TaskMindMapProps> = ({
               searchQuery={searchQuery}
               onSearch={handleSearch}
               onAutoLayout={handleAutoLayout}
-              onZoomIn={() => zoomIn()}
-              onZoomOut={() => zoomOut()}
-              onFitView={() => fitView()}
+              onZoomIn={zoomIn}
+              onZoomOut={zoomOut}
+              onFitView={fitView}
             />
           </Panel>
         </ReactFlow>
